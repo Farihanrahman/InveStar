@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InveStar BD - Money Flow Diagram</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #00796b;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #00796b;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+        }
+        .flowchart {
+            margin: 40px 0;
+            text-align: center;
+        }
+        .flowchart h2 {
+            color: #00796b;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .legend {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .legend h3 {
+            color: #00796b;
+            margin-top: 0;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        .details {
+            margin: 40px 0;
+        }
+        .detail-section {
+            background-color: #e3f2fd;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-section h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        .detail-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .detail-section li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>InveStar BD Money Flow</h1>
+            <p>How Money Travels from USD to BDT via Stellar Blockchain & MoneyGram</p>
+        </div>
+
+        <div class="flowchart">
+            <h2>Money Flow Diagram</h2>
+            <div class="mermaid">
+                flowchart TD
+                    %% User Side (USA)
+                    A["💰 User's USD Bank Account<br/>$100 USD"] --> B["📱 InveStar App<br/>User initiates transfer"]
+                    B --> C["💳 Payment Processing<br/>Debit $100 USD"]
+                    
+                    %% Stellar Blockchain
+                    C --> D["🔗 Stellar Network<br/>Convert USD to USDC"]
+                    D --> E["⚡ USDC Transaction<br/>$100 USDC on Stellar"]
+                    E --> F["🏦 Anchor/Service Wallet<br/>Hold USDC temporarily"]
+                    
+                    %% MoneyGram Processing
+                    F --> G["🌐 MoneyGram API<br/>Create payout transaction"]
+                    G --> H["💱 Exchange Rate Processing<br/>USD to BDT conversion"]
+                    H --> I["🏪 MoneyGram Bangladesh<br/>Local BDT distribution"]
+                    
+                    %% Recipient Side (Bangladesh)
+                    I --> J["📞 Recipient Notification<br/>SMS/Email alert"]
+                    J --> K["🏪 MoneyGram Location<br/>4,500+ locations in BD"]
+                    K --> L["💵 Cash Pickup<br/>11,050 BDT (example)"]
+                    
+                    %% Fee Structure
+                    C --> M["💸 Transaction Fees<br/>$5.50 total fees"]
+                    M --> N["📊 Fee Breakdown<br/>Stellar: $0.50<br/>MoneyGram: $5.00"]
+                    
+                    %% Exchange Rate
+                    H --> O["📈 Exchange Rate<br/>1 USD = 110.5 BDT"]
+                    
+                    %% Styling
+                    subgraph "🇺🇸 USA"
+                        A
+                        B
+                        C
+                        M
+                        N
+                    end
+                    
+                    subgraph "🔗 Blockchain"
+                        D
+                        E
+                        F
+                    end
+                    
+                    subgraph "🌐 Processing"
+                        G
+                        H
+                        O
+                    end
+                    
+                    subgraph "🇧🇩 Bangladesh"
+                        I
+                        J
+                        K
+                        L
+                    end
+                    
+                    style A fill:#e8f5e8,stroke:#4caf50,stroke-width:3px
+                    style L fill:#fff3e0,stroke:#ff9800,stroke-width:3px
+                    style D fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+                    style E fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+                    style F fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+                    style G fill:#fff8e1,stroke:#ffc107,stroke-width:2px
+                    style H fill:#fff8e1,stroke:#ffc107,stroke-width:2px
+                    style I fill:#fff8e1,stroke:#ffc107,stroke-width:2px
+                    style M fill:#ffebee,stroke:#f44336,stroke-width:2px
+                    style N fill:#ffebee,stroke:#f44336,stroke-width:2px
+                    style O fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+            </div>
+        </div>
+
+        <div class="legend">
+            <h3>💰 Money Flow Legend</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4caf50;"></div>
+                    <span><strong>Source (USA):</strong> User's USD funds</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2196f3;"></div>
+                    <span><strong>Blockchain:</strong> Stellar USDC conversion</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffc107;"></div>
+                    <span><strong>Processing:</strong> MoneyGram API processing</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff9800;"></div>
+                    <span><strong>Destination (BD):</strong> BDT cash pickup</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f44336;"></div>
+                    <span><strong>Fees:</strong> Transaction costs</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #9c27b0;"></div>
+                    <span><strong>Exchange Rate:</strong> USD to BDT conversion</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="detail-section">
+                <h3>💵 Money Flow Breakdown</h3>
+                <ul>
+                    <li><strong>Starting Amount:</strong> $100 USD in user's bank account</li>
+                    <li><strong>Stellar Conversion:</strong> $100 USD → $100 USDC (1:1 peg)</li>
+                    <li><strong>Exchange Rate:</strong> 1 USD = 110.5 BDT (real-time rate)</li>
+                    <li><strong>Final Amount:</strong> 11,050 BDT for recipient</li>
+                    <li><strong>Total Fees:</strong> $5.50 (Stellar: $0.50 + MoneyGram: $5.00)</li>
+                    <li><strong>Processing Time:</strong> 2-4 hours (vs traditional 3-5 days)</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h3>🔗 Blockchain Benefits</h3>
+                <ul>
+                    <li><strong>Transparency:</strong> Every transaction recorded on Stellar blockchain</li>
+                    <li><strong>Speed:</strong> Near-instant USDC transfers</li>
+                    <li><strong>Security:</strong> Immutable transaction records</li>
+                    <li><strong>Cost:</strong> Minimal blockchain fees ($0.50 per transaction)</li>
+                    <li><strong>Global:</strong> Works anywhere Stellar is supported</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h3>🏪 MoneyGram Integration</h3>
+                <ul>
+                    <li><strong>Coverage:</strong> 4,500+ locations across Bangladesh</li>
+                    <li><strong>Accessibility:</strong> Cash pickup within 2-4 hours</li>
+                    <li><strong>Compliance:</strong> Full KYC/AML integration</li>
+                    <li><strong>Security:</strong> Trusted global money transfer network</li>
+                    <li><strong>Real-time:</strong> Live status tracking and notifications</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h3>📊 Fee Structure Example</h3>
+                <ul>
+                    <li><strong>Transfer Amount:</strong> $100 USD</li>
+                    <li><strong>Stellar Network Fee:</strong> $0.50</li>
+                    <li><strong>MoneyGram Processing Fee:</strong> $5.00</li>
+                    <li><strong>Total Fees:</strong> $5.50 (5.5% of transfer)</li>
+                    <li><strong>Exchange Rate:</strong> 110.5 BDT per USD</li>
+                    <li><strong>Recipient Receives:</strong> 11,050 BDT</li>
+                    <li><strong>Effective Rate:</strong> 110.5 BDT per USD (after fees)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>InveStar BD</strong> - Revolutionizing Cross-Border Remittance with Blockchain Technology</p>
+            <p>© 2024 InveStar BD. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html> 

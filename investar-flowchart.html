@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InveStar Feature Flowchart</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 40px 60px;
+      max-width: 900px;
+      margin: 40px auto;
+    }
+    h1 {
+      text-align: center;
+      color: #f57c00;
+      font-size: 2.2em;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+    .mermaid {
+      background: #fffde7;
+      border-radius: 16px;
+      padding: 30px 10px;
+      box-shadow: 0 2px 12px rgba(255,193,7,0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>InveStar: Empowering Your Financial Journey</h1>
+    <div class="mermaid">
+      flowchart TD
+        A["<b style='color:#1976d2;'>REMIT</b><br><span style='color:#0288d1;'>Blockchain-based cross-border payments<br>Anytime, anywhere, in seconds!</span>"]
+        B["<b style='color:#fbc02d;'>INVEST</b><br><span style='color:#f57c00;'>Diversified/tokenized real-world assets (RWA)<br>via InveStar wallet</span>"]
+        C["<b style='color:#388e3c;'>InveStar AI Analyst</b><br><span style='color:#43a047;'>Grow Net Worth SECURELY<br>with SOROBAN (smart contracts, Escrow funds)</span>"]
+        D["<b style='color:#d81b60;'>InveStar University</b><br><span style='color:#ad1457;'>AI-powered 24/7 customized Learning Platform<br>FREE Basic Courses with Agentic AI</span>"]
+
+        A --> B
+        B --> C
+        C --> D
+
+        style A fill:#e3f2fd,stroke:#1976d2,stroke-width:4px
+        style B fill:#fff9c4,stroke:#fbc02d,stroke-width:4px
+        style C fill:#e8f5e9,stroke:#388e3c,stroke-width:4px
+        style D fill:#fce4ec,stroke:#d81b60,stroke-width:4px
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#fbc02d',
+        edgeLabelBackground:'#fffde7',
+        fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+        fontSize: '20px',
+        nodeTextColor: '#222',
+        lineColor: '#f57c00',
+        secondaryColor: '#1976d2',
+        tertiaryColor: '#43a047',
+      }
+    });
+  </script>
+</body>
+</html> 

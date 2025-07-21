@@ -1,0 +1,358 @@
+<h1 id="investar-soroban-integrated-stellar-wallet-kyc">InveStar
+Soroban-Integrated Stellar Wallet &amp; KYC</h1>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol type="1">
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#architecture-overview">Architecture Overview</a></li>
+<li><a href="#implementation-steps">Implementation Steps</a></li>
+<li><a href="#wallet-flowchart">Wallet Flowchart</a></li>
+<li><a href="#kyc-flow--mobile-integration">KYC Flow &amp; Mobile
+Integration</a></li>
+<li><a href="#kyc-flowchart">KYC Flowchart</a></li>
+<li><a href="#code-scaffold">Code Scaffold</a></li>
+<li><a href="#references">References</a></li>
+</ol>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>This document outlines the architecture, implementation plan, and
+code scaffold for building a Soroban-integrated Stellar wallet for
+InveStar, including KYC (Know Your Customer) onboarding for both web and
+mobile platforms.</p>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p><strong>Features:</strong> - Multi-asset support: XLM, USDC, Soroban
+tokens, NFTs - User onboarding: create/import keys, KYC (if custodial) -
+Secure key management: local (non-custodial), optional custodial/MPC -
+Soroban smart contract interaction: invest, swap, compliance, etc. - UI:
+balances, transfers, contract calls, investments - Cross-platform: Web
+(React/Next.js), Mobile (React Native/Flutter)</p>
+<p><strong>Tech Stack:</strong> | Layer | Technology Choices |
+|—————|—————————————————–| | Smart Contract| Soroban (Rust, WASM) | |
+Backend | Node.js/Express (Stellar SDK JS), or Go/Python | | Frontend |
+React/Next.js (Web), React Native/Flutter (Mobile) | | Wallet Kit |
+Stellar Wallet Kit, Freighter, or custom | | Key Storage | LocalStorage,
+Secure Enclave, HSM, or Custodial | | Network | Stellar RPC, Soroban
+RPC, Horizon API |</p>
+<hr />
+<h2 id="implementation-steps">Implementation Steps</h2>
+<ol type="1">
+<li><strong>Environment Setup</strong>
+<ul>
+<li>Install Node.js, Yarn/NPM, Rust, Soroban CLI, and Stellar SDK.</li>
+<li>Clone <a
+href="https://github.com/stellar/soroban-example-dapp">stellar/soroban-example-dapp</a>
+for reference.</li>
+<li>Set up a monorepo or separate frontend/backend repos.</li>
+</ul></li>
+<li><strong>Key Management</strong>
+<ul>
+<li>Implement BIP-39 mnemonic generation/import (non-custodial).</li>
+<li>Encrypt and store keys securely (localStorage, Secure Enclave, or
+backend for custodial).</li>
+<li>Provide backup/recovery (mnemonic or encrypted file).</li>
+</ul></li>
+<li><strong>Network Integration</strong>
+<ul>
+<li>Connect to Stellar Horizon and Soroban RPC endpoints.</li>
+<li>Support Futurenet/Testnet/Mainnet switching.</li>
+</ul></li>
+<li><strong>Asset &amp; Balance Display</strong>
+<ul>
+<li>Query balances for XLM, USDC, Soroban tokens, NFTs.</li>
+<li>Show transaction history and contract events.</li>
+</ul></li>
+<li><strong>Transaction &amp; Contract Interaction</strong>
+<ul>
+<li>Build, sign, and submit Stellar and Soroban transactions.</li>
+<li>UI for sending/receiving, contract calls (invest, swap,
+compliance).</li>
+<li>Contract invocation: select contract, enter params, sign,
+submit.</li>
+</ul></li>
+<li><strong>UI/UX</strong>
+<ul>
+<li>Flows for onboarding, send/receive, asset management, contract
+approval.</li>
+<li>Notifications, transaction status, error handling.</li>
+<li>Educational onboarding for new users.</li>
+</ul></li>
+<li><strong>Security &amp; Compliance</strong>
+<ul>
+<li>PIN/biometric authentication.</li>
+<li>Secure key storage (hardware/TEE for non-custodial).</li>
+<li>KYC/AML modules (if required).</li>
+<li>Code audit and open-source security checklists.</li>
+</ul></li>
+<li><strong>Testing &amp; Deployment</strong>
+<ul>
+<li>Use Soroban Fiddle, Stellar testnet/Futurenet for testing.</li>
+<li>End-to-end UI and backend tests.</li>
+<li>Deploy to web, iOS, Android after mainnet verification.</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="wallet-flowchart">Wallet Flowchart</h2>
+<pre class="mermaid"><code>flowchart TD
+    A[&quot;👛 InveStar Wallet&quot;] 
+    B[&quot;🌍 Remittance\nVia Stellar &amp; MoneyGram&quot;]
+    C[&quot;💸 Send/Receive Money\nCross-border, fast, secure&quot;]
+    D[&quot;💼 Invest in Tokenized RWAs\nReal-World Assets&quot;]
+    E[&quot;🔗 Soroban Smart Contracts\nEscrow, Compliance, Automation&quot;]
+
+    A --&gt; B
+    B --&gt; C
+    A --&gt; D
+    D --&gt; E
+
+    style A fill:#fff3e0,stroke:#f57c00,stroke-width:4px
+    style B fill:#e3f2fd,stroke:#1976d2,stroke-width:4px
+    style C fill:#e8f5e9,stroke:#43a047,stroke-width:4px
+    style D fill:#fce4ec,stroke:#d81b60,stroke-width:4px
+    style E fill:#ede7f6,stroke:#7e57c2,stroke-width:4px</code></pre>
+<hr />
+<h2 id="kyc-flow-mobile-integration">KYC Flow &amp; Mobile
+Integration</h2>
+<h3 id="kyc-flow">KYC Flow</h3>
+<ol type="1">
+<li>User starts onboarding in the mobile app.</li>
+<li>App collects required KYC info (name, address, ID photo, selfie,
+etc.).</li>
+<li>App sends data securely to backend.</li>
+<li>Backend processes KYC (either in-house or via a provider like
+Sumsub, Jumio, Persona, etc.).</li>
+<li>Backend returns KYC status (pending, approved, rejected).</li>
+<li>App updates UI and restricts wallet features until KYC is
+approved.</li>
+</ol>
+<h3 id="kyc-mobile-ui-react-native">KYC Mobile UI (React Native)</h3>
+<ul>
+<li>Collects user info and images</li>
+<li>Submits to backend</li>
+<li>Polls for KYC status</li>
+<li>Restricts wallet features until approved</li>
+</ul>
+<hr />
+<h2 id="kyc-flowchart">KYC Flowchart</h2>
+<pre class="mermaid"><code>flowchart TD
+    U[&quot;User Onboarding (Mobile App)&quot;] --&gt; F[&quot;Fill KYC Form&quot;]
+    F --&gt; P[&quot;Upload ID Photo &amp; Selfie&quot;]
+    P --&gt; S[&quot;Submit to Backend&quot;]
+    S --&gt; K[&quot;KYC Provider/Backend Review&quot;]
+    K --&gt;|Approved| A[&quot;Wallet Features Unlocked&quot;]
+    K --&gt;|Rejected| R[&quot;User Notified, Retry&quot;]
+    K --&gt;|Pending| W[&quot;Wait/Status Poll&quot;]</code></pre>
+<hr />
+<h2 id="code-scaffold">Code Scaffold</h2>
+<h3 id="monorepo-structure">Monorepo Structure</h3>
+<pre><code>/investar-stellar-wallet
+  /frontend
+  /backend
+  /mobile (optional for React Native)</code></pre>
+<h3 id="package.json"><code>/package.json</code></h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;investar-stellar-wallet&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;private&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;workspaces&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;frontend&quot;</span><span class="ot">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;backend&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="frontendpackage.json"><code>/frontend/package.json</code></h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;investar-wallet-frontend&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;private&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;dependencies&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;react&quot;</span><span class="fu">:</span> <span class="st">&quot;^18.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;react-dom&quot;</span><span class="fu">:</span> <span class="st">&quot;^18.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;next&quot;</span><span class="fu">:</span> <span class="st">&quot;^13.0.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;stellar-sdk&quot;</span><span class="fu">:</span> <span class="st">&quot;^10.5.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bip39&quot;</span><span class="fu">:</span> <span class="st">&quot;^3.0.4&quot;</span><span class="fu">,</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;axios&quot;</span><span class="fu">:</span> <span class="st">&quot;^1.3.0&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;scripts&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;dev&quot;</span><span class="fu">:</span> <span class="st">&quot;next dev&quot;</span><span class="fu">,</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;build&quot;</span><span class="fu">:</span> <span class="st">&quot;next build&quot;</span><span class="fu">,</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;start&quot;</span><span class="fu">:</span> <span class="st">&quot;next start&quot;</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3
+id="frontendpagesindex.tsx"><code>/frontend/pages/index.tsx</code></h3>
+<pre class="tsx"><code>import { useState } from &#39;react&#39;
+import { generateMnemonic } from &#39;bip39&#39;
+import { Keypair, Server } from &#39;stellar-sdk&#39;
+
+export default function Home() {
+  const [mnemonic, setMnemonic] = useState(&#39;&#39;)
+  const [publicKey, setPublicKey] = useState(&#39;&#39;)
+  const [secret, setSecret] = useState(&#39;&#39;)
+  const [balance, setBalance] = useState(&#39;&#39;)
+
+  const createWallet = async () =&gt; {
+    const m = generateMnemonic()
+    setMnemonic(m)
+    // TODO: Derive keypair from mnemonic (use stellar-hd-wallet or similar)
+    const kp = Keypair.random()
+    setPublicKey(kp.publicKey())
+    setSecret(kp.secret())
+  }
+
+  const checkBalance = async () =&gt; {
+    const server = new Server(&#39;https://horizon-testnet.stellar.org&#39;)
+    const account = await server.loadAccount(publicKey)
+    setBalance(account.balances.map(b =&gt; `${b.balance} ${b.asset_type}`).join(&#39;, &#39;))
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;InveStar Stellar Wallet&lt;/h1&gt;
+      &lt;button onClick={createWallet}&gt;Create Wallet&lt;/button&gt;
+      {mnemonic &amp;&amp; &lt;div&gt;&lt;b&gt;Mnemonic:&lt;/b&gt; {mnemonic}&lt;/div&gt;}
+      {publicKey &amp;&amp; &lt;div&gt;&lt;b&gt;Public Key:&lt;/b&gt; {publicKey}&lt;/div&gt;}
+      {secret &amp;&amp; &lt;div&gt;&lt;b&gt;Secret:&lt;/b&gt; {secret}&lt;/div&gt;}
+      {publicKey &amp;&amp; &lt;button onClick={checkBalance}&gt;Check Balance&lt;/button&gt;}
+      {balance &amp;&amp; &lt;div&gt;&lt;b&gt;Balance:&lt;/b&gt; {balance}&lt;/div&gt;}
+      {/* TODO: Add send/receive, contract interaction, asset list, etc. */}
+    &lt;/div&gt;
+  )
+}</code></pre>
+<h3
+id="frontendservicesstellar.ts"><code>/frontend/services/stellar.ts</code></h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { Keypair<span class="op">,</span> <span class="bu">Server</span><span class="op">,</span> TransactionBuilder<span class="op">,</span> Networks<span class="op">,</span> Operation<span class="op">,</span> Asset } <span class="im">from</span> <span class="st">&#39;stellar-sdk&#39;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">const</span> server <span class="op">=</span> <span class="kw">new</span> <span class="bu">Server</span>(<span class="st">&#39;https://horizon-testnet.stellar.org&#39;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">getAccount</span>(publicKey<span class="op">:</span> <span class="dt">string</span>) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="cf">await</span> server<span class="op">.</span><span class="fu">loadAccount</span>(publicKey)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">sendPayment</span>(sourceSecret<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> destination<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> amount<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> asset<span class="op">:</span> Asset <span class="op">=</span> Asset<span class="op">.</span><span class="fu">native</span>()) {</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> sourceKeypair <span class="op">=</span> Keypair<span class="op">.</span><span class="fu">fromSecret</span>(sourceSecret)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> account <span class="op">=</span> <span class="cf">await</span> server<span class="op">.</span><span class="fu">loadAccount</span>(sourceKeypair<span class="op">.</span><span class="fu">publicKey</span>())</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> tx <span class="op">=</span> <span class="kw">new</span> <span class="fu">TransactionBuilder</span>(account<span class="op">,</span> {</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    fee<span class="op">:</span> <span class="cf">await</span> server<span class="op">.</span><span class="fu">fetchBaseFee</span>()<span class="op">,</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    networkPassphrase<span class="op">:</span> Networks<span class="op">.</span><span class="at">TESTNET</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">addOperation</span>(Operation<span class="op">.</span><span class="fu">payment</span>({</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      destination<span class="op">,</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      asset<span class="op">,</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      amount</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    }))</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">setTimeout</span>(<span class="dv">30</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">build</span>()</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  tx<span class="op">.</span><span class="fu">sign</span>(sourceKeypair)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="cf">await</span> server<span class="op">.</span><span class="fu">submitTransaction</span>(tx)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="backendkyc.js"><code>/backend/kyc.js</code></h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> express <span class="op">=</span> <span class="pp">require</span>(<span class="st">&#39;express&#39;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> multer <span class="op">=</span> <span class="pp">require</span>(<span class="st">&#39;multer&#39;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> cors <span class="op">=</span> <span class="pp">require</span>(<span class="st">&#39;cors&#39;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> app <span class="op">=</span> <span class="fu">express</span>()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> upload <span class="op">=</span> <span class="fu">multer</span>({ <span class="dt">dest</span><span class="op">:</span> <span class="st">&#39;uploads/&#39;</span> })</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">use</span>(<span class="fu">cors</span>())</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">use</span>(express<span class="op">.</span><span class="fu">json</span>())</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">// In-memory KYC status (replace with DB in production)</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> kycStatus <span class="op">=</span> {}</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">post</span>(<span class="st">&#39;/kyc/submit&#39;</span><span class="op">,</span> upload<span class="op">.</span><span class="fu">fields</span>([{ <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;idPhoto&#39;</span> }<span class="op">,</span> { <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;selfie&#39;</span> }])<span class="op">,</span> (req<span class="op">,</span> res) <span class="kw">=&gt;</span> {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> { name<span class="op">,</span> address<span class="op">,</span> dob<span class="op">,</span> userId } <span class="op">=</span> req<span class="op">.</span><span class="at">body</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Save files: req.files[&#39;idPhoto&#39;][0], req.files[&#39;selfie&#39;][0]</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">// </span><span class="al">TODO</span><span class="co">: Integrate with KYC provider API here</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  kycStatus[userId] <span class="op">=</span> <span class="st">&#39;pending&#39;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  res<span class="op">.</span><span class="fu">json</span>({ <span class="dt">status</span><span class="op">:</span> <span class="st">&#39;pending&#39;</span> })</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;/kyc/status/:userId&#39;</span><span class="op">,</span> (req<span class="op">,</span> res) <span class="kw">=&gt;</span> {</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  res<span class="op">.</span><span class="fu">json</span>({ <span class="dt">status</span><span class="op">:</span> kycStatus[req<span class="op">.</span><span class="at">params</span><span class="op">.</span><span class="at">userId</span>] <span class="op">||</span> <span class="st">&#39;not_submitted&#39;</span> })</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">listen</span>(<span class="dv">4000</span><span class="op">,</span> () <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;KYC backend running on port 4000&#39;</span>))</span></code></pre></div>
+<h3
+id="mobilescreenskyconboarding.tsx"><code>/mobile/screens/KYCOnboarding.tsx</code></h3>
+<pre class="tsx"><code>import React, { useState } from &#39;react&#39;
+import { View, Text, TextInput, Button, Image, Alert } from &#39;react-native&#39;
+import * as ImagePicker from &#39;react-native-image-picker&#39;
+import axios from &#39;axios&#39;
+
+export default function KYCOnboarding({ userId }: { userId: string }) {
+  const [name, setName] = useState(&#39;&#39;)
+  const [address, setAddress] = useState(&#39;&#39;)
+  const [dob, setDob] = useState(&#39;&#39;)
+  const [idPhoto, setIdPhoto] = useState&lt;any&gt;(null)
+  const [selfie, setSelfie] = useState&lt;any&gt;(null)
+  const [status, setStatus] = useState(&#39;not_submitted&#39;)
+
+  const pickImage = async (setter: (img: any) =&gt; void) =&gt; {
+    ImagePicker.launchCamera({ mediaType: &#39;photo&#39; }, (response) =&gt; {
+      if (response.assets &amp;&amp; response.assets.length &gt; 0) {
+        setter(response.assets[0])
+      }
+    })
+  }
+
+  const submitKYC = async () =&gt; {
+    if (!name || !address || !dob || !idPhoto || !selfie) {
+      Alert.alert(&#39;Please fill all fields and upload photos&#39;)
+      return
+    }
+    const formData = new FormData()
+    formData.append(&#39;userId&#39;, userId)
+    formData.append(&#39;name&#39;, name)
+    formData.append(&#39;address&#39;, address)
+    formData.append(&#39;dob&#39;, dob)
+    formData.append(&#39;idPhoto&#39;, {
+      uri: idPhoto.uri,
+      type: idPhoto.type,
+      name: idPhoto.fileName,
+    })
+    formData.append(&#39;selfie&#39;, {
+      uri: selfie.uri,
+      type: selfie.type,
+      name: selfie.fileName,
+    })
+    const res = await axios.post(&#39;http://localhost:4000/kyc/submit&#39;, formData, {
+      headers: { &#39;Content-Type&#39;: &#39;multipart/form-data&#39; }
+    })
+    setStatus(res.data.status)
+  }
+
+  const checkStatus = async () =&gt; {
+    const res = await axios.get(`http://localhost:4000/kyc/status/${userId}`)
+    setStatus(res.data.status)
+  }
+
+  return (
+    &lt;View style={{ padding: 20 }}&gt;
+      &lt;Text&gt;KYC Onboarding&lt;/Text&gt;
+      &lt;TextInput placeholder=&quot;Full Name&quot; value={name} onChangeText={setName} /&gt;
+      &lt;TextInput placeholder=&quot;Address&quot; value={address} onChangeText={setAddress} /&gt;
+      &lt;TextInput placeholder=&quot;Date of Birth&quot; value={dob} onChangeText={setDob} /&gt;
+      &lt;Button title=&quot;Upload ID Photo&quot; onPress={() =&gt; pickImage(setIdPhoto)} /&gt;
+      {idPhoto &amp;&amp; &lt;Image source={{ uri: idPhoto.uri }} style={{ width: 100, height: 100 }} /&gt;}
+      &lt;Button title=&quot;Take Selfie&quot; onPress={() =&gt; pickImage(setSelfie)} /&gt;
+      {selfie &amp;&amp; &lt;Image source={{ uri: selfie.uri }} style={{ width: 100, height: 100 }} /&gt;}
+      &lt;Button title=&quot;Submit KYC&quot; onPress={submitKYC} /&gt;
+      &lt;Button title=&quot;Check Status&quot; onPress={checkStatus} /&gt;
+      &lt;Text&gt;Status: {status}&lt;/Text&gt;
+    &lt;/View&gt;
+  )
+}</code></pre>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li><a
+href="https://github.com/stellar/soroban-example-dapp">stellar/soroban-example-dapp</a></li>
+<li><a href="https://github.com/stellar">Stellar SDKs</a></li>
+<li><a href="https://github.com/stellar/soroban-examples">Soroban
+contract examples</a></li>
+<li><a href="https://github.com/stellar/wallet-kit">Stellar Wallet
+Kit</a></li>
+<li><a href="https://github.com/stellar/freighter">Freighter
+Wallet</a></li>
+</ul>

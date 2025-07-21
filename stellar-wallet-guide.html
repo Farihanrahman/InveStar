@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InveStar BD - Stellar Wallet Guide for MoneyGram Ramps</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 40px; }
+    h1, h2, h3 { color: #1976d2; }
+    h1 { margin-top: 0; }
+    .section { margin: 32px 0; }
+    code, pre { background: #f1f8e9; color: #263238; border-radius: 4px; padding: 2px 6px; font-size: 1em; }
+    pre { padding: 16px; overflow-x: auto; }
+    .important { background: #fff3e0; border-left: 4px solid #ff9800; padding: 16px; margin: 24px 0; border-radius: 6px; }
+    .step { margin-bottom: 18px; }
+    .table { width: 100%; border-collapse: collapse; margin: 18px 0; }
+    .table th, .table td { border: 1px solid #e0e0e0; padding: 8px 12px; }
+    .table th { background: #e3f2fd; }
+    .footer { text-align: center; color: #888; margin-top: 40px; font-size: 0.95em; }
+    .code-title { color: #388e3c; font-weight: bold; margin-bottom: 4px; }
+    ul { margin: 0 0 0 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>InveStar BD<br>Stellar Wallet Guide for MoneyGram Ramps</h1>
+    <div class="section">
+      <h2>Overview</h2>
+      <p>This guide explains how to generate a Stellar wallet for MoneyGram Ramps integration, what details to submit, and best practices for security and onboarding.</p>
+    </div>
+
+    <div class="section">
+      <h2>Step 1: Generate a Stellar Wallet (Keypair)</h2>
+      <div class="step">
+        <strong>Option A: Use the <a href="https://laboratory.stellar.org/#account-creator?network=test" target="_blank">Stellar Laboratory Keypair Generator</a></strong>
+        <ul>
+          <li>Click "Generate Keypair"</li>
+          <li>Copy the <b>Public Key</b> (starts with <code>G...</code>) and <b>Secret Key</b> (starts with <code>S...</code>)</li>
+        </ul>
+      </div>
+      <div class="step">
+        <strong>Option B: Use Node.js and Stellar SDK</strong>
+        <div class="code-title">Node.js Example</div>
+        <pre>const { Keypair } = require('stellar-sdk');
+const pair = Keypair.random();
+console.log('Public Key:', pair.publicKey());
+console.log('Secret Key:', pair.secret());</pre>
+      </div>
+      <div class="step">
+        <strong>Option C: Use Python</strong>
+        <div class="code-title">Python Example</div>
+        <pre>from stellar_sdk import Keypair
+pair = Keypair.random()
+print("Public Key:", pair.public_key)
+print("Secret Key:", pair.secret)</pre>
+      </div>
+      <div class="important">
+        <b>Security Tip:</b> <br>
+        <ul>
+          <li>Store the <b>Secret Key</b> securely. <b>Never share it publicly.</b></li>
+          <li>Use the <b>Public Key</b> for MoneyGram and Stellar integration.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Step 2: Fund and Prepare the Wallet</h2>
+      <ul>
+        <li>For <b>testnet</b>, use the <a href="https://friendbot.stellar.org/" target="_blank">Stellar Friendbot</a> to fund your wallet.</li>
+        <li>For <b>mainnet</b>, fund with at least the minimum XLM reserve.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Step 3: Prepare Wallet Details for MoneyGram</h2>
+      <table class="table">
+        <tr><th>Field</th><th>Example Value</th></tr>
+        <tr><td>Wallet Name</td><td>InveStar BD</td></tr>
+        <tr><td>Wallet Domain</td><td>investarbd.com</td></tr>
+        <tr><td>Authentication Address</td><td>G... (your public key)</td></tr>
+        <tr><td>Source Address</td><td>G... (your public key)</td></tr>
+        <tr><td>Deposit Address</td><td>G... (your public key)</td></tr>
+        <tr><td>Contact Email</td><td>tech@investarbd.com</td></tr>
+      </table>
+      <div class="important">
+        <b>Tip:</b> Host a <code>stellar.toml</code> file at <code>https://investarbd.com/.well-known/stellar.toml</code> with your wallet and contact details for best practices.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Step 4: Submit to MoneyGram</h2>
+      <ol>
+        <li>Go to <a href="https://developer.moneygram.com/moneygram-developer/docs/access-to-moneygram-ramps" target="_blank">MoneyGram Ramps Instant Access</a></li>
+        <li>Fill in your wallet details as above</li>
+        <li>Choose <b>Stellar</b> as blockchain, and specify if your wallet is custodial or non-custodial</li>
+        <li>Submit and wait for allowlisting</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>Security Best Practices</h2>
+      <ul>
+        <li>Keep the <b>Secret Key</b> offline and never share it</li>
+        <li>Use environment variables or secure vaults for key management</li>
+        <li>Rotate keys if you suspect compromise</li>
+        <li>Implement SEP-10 authentication if required</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Next Steps for Integration</h2>
+      <ul>
+        <li>Integrate the wallet with your backend and MoneyGram API</li>
+        <li>Test with sandbox credentials before going live</li>
+        <li>Monitor transactions and set up webhooks for real-time updates</li>
+        <li>Ensure compliance with KYC/AML requirements</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>Guide generated for InveStar BD Tech Team &mdash; <a href="https://developer.moneygram.com/moneygram-developer/docs/access-to-moneygram-ramps" target="_blank">MoneyGram Ramps Docs</a></p>
+      <p>&copy; 2024 InveStar BD. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html> 

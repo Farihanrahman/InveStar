@@ -1,0 +1,44 @@
+{
+  "name": "investar-stellar-wallet",
+  "version": "1.0.0",
+  "description": "InveStar Digital Wallet - Stellar Testnet Integration",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.3.0",
+    "autoprefixer": "^10.4.14",
+    "axios": "^1.3.0",
+    "bip39": "^3.0.4",
+    "crypto-js": "^4.1.1",
+    "lucide-react": "^0.263.1",
+    "next": "^13.4.0",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^13.4.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "stellar",
+    "wallet",
+    "blockchain",
+    "cryptocurrency",
+    "testnet"
+  ],
+  "author": "InveStar",
+  "license": "MIT"
+}

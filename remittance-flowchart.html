@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InveStar BD - USA to Bangladesh Remittance Flow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #00796b;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #00796b;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+        }
+        .flowchart {
+            margin: 40px 0;
+            text-align: center;
+        }
+        .flowchart img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .steps {
+            margin: 40px 0;
+        }
+        .step {
+            background-color: #f8f9fa;
+            border-left: 4px solid #00796b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .step h3 {
+            color: #00796b;
+            margin: 0 0 10px 0;
+        }
+        .step p {
+            margin: 0;
+            line-height: 1.6;
+        }
+        .tech-stack {
+            background-color: #e3f2fd;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .tech-stack h2 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        .tech-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .tech-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .tech-item h4 {
+            color: #1976d2;
+            margin: 0 0 10px 0;
+        }
+        .tech-item ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .tech-item li {
+            margin: 5px 0;
+        }
+        .benefits {
+            background-color: #f1f8e9;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .benefits h2 {
+            color: #388e3c;
+            margin-top: 0;
+        }
+        .benefits ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .benefits li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>InveStar BD Remittance Flow</h1>
+            <p>USA to Bangladesh via Stellar Blockchain & MoneyGram</p>
+        </div>
+
+        <div class="flowchart">
+            <h2>Remittance Flowchart</h2>
+            <div class="mermaid">
+                flowchart TD
+                    A["User in USA initiates remittance"] --> B["InveStar App/API"]
+                    B --> C["Get MoneyGram quote (USD to BDT)"]
+                    C --> D["User confirms & provides recipient details"]
+                    D --> E["StellarService: Convert USD to USDC"]
+                    E --> F["Send USDC to Anchor/Service Wallet"]
+                    F --> G["MoneyGramService: Create payout transaction"]
+                    G --> H["MoneyGram API: Process payout"]
+                    H --> I["MoneyGram notifies InveStar via webhook"]
+                    I --> J["Recipient in Bangladesh receives BDT"]
+                    J --> K["Recipient picks up cash at MoneyGram location"]
+                    
+                    subgraph "USA"
+                      A
+                      B
+                      C
+                      D
+                      E
+                      F
+                    end
+                    subgraph "Bangladesh"
+                      G
+                      H
+                      I
+                      J
+                      K
+                    end
+                    style A fill:#e0f7fa,stroke:#00796b
+                    style K fill:#ffe082,stroke:#fbc02d
+                    style J fill:#ffe082,stroke:#fbc02d
+                    style B fill:#b3e5fc,stroke:#0288d1
+                    style C fill:#b3e5fc,stroke:#0288d1
+                    style D fill:#b3e5fc,stroke:#0288d1
+                    style E fill:#c8e6c9,stroke:#388e3c
+                    style F fill:#c8e6c9,stroke:#388e3c
+                    style G fill:#fff9c4,stroke:#fbc02d
+                    style H fill:#fff9c4,stroke:#fbc02d
+                    style I fill:#ffe0b2,stroke:#f57c00
+            </div>
+        </div>
+
+        <div class="steps">
+            <h2>Detailed Process Steps</h2>
+            
+            <div class="step">
+                <h3>1. Initiation (USA)</h3>
+                <p>User in the USA opens the InveStar app and initiates a remittance transfer. They enter the amount in USD and provide recipient details in Bangladesh.</p>
+            </div>
+
+            <div class="step">
+                <h3>2. Quote Generation</h3>
+                <p>The InveStar API requests a real-time quote from MoneyGram for USD to BDT conversion, including fees and exchange rates.</p>
+            </div>
+
+            <div class="step">
+                <h3>3. User Confirmation</h3>
+                <p>User reviews the quote, confirms the transaction, and provides recipient information (name, phone, pickup location).</p>
+            </div>
+
+            <div class="step">
+                <h3>4. Blockchain Transaction</h3>
+                <p>StellarService converts USD to USDC on the Stellar blockchain and transfers it to the service/anchor wallet for processing.</p>
+            </div>
+
+            <div class="step">
+                <h3>5. MoneyGram Integration</h3>
+                <p>MoneyGramService creates a payout transaction through the MoneyGram API, specifying the recipient and pickup location in Bangladesh.</p>
+            </div>
+
+            <div class="step">
+                <h3>6. Processing</h3>
+                <p>MoneyGram processes the payout transaction and converts the USDC to BDT for local distribution.</p>
+            </div>
+
+            <div class="step">
+                <h3>7. Webhook Notification</h3>
+                <p>MoneyGram sends a webhook notification to InveStar confirming the transaction status and completion.</p>
+            </div>
+
+            <div class="step">
+                <h3>8. Recipient Notification (Bangladesh)</h3>
+                <p>The recipient in Bangladesh receives notification that funds are available for pickup at the specified MoneyGram location.</p>
+            </div>
+
+            <div class="step">
+                <h3>9. Cash Pickup</h3>
+                <p>Recipient visits the MoneyGram location in Bangladesh, provides identification, and collects the BDT cash.</p>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h2>Technology Stack</h2>
+            <div class="tech-list">
+                <div class="tech-item">
+                    <h4>Blockchain</h4>
+                    <ul>
+                        <li>Stellar Network</li>
+                        <li>USDC (Circle)</li>
+                        <li>Stellar SDK</li>
+                    </ul>
+                </div>
+                <div class="tech-item">
+                    <h4>Money Transfer</h4>
+                    <ul>
+                        <li>MoneyGram API</li>
+                        <li>OAuth 2.0</li>
+                        <li>Webhook Integration</li>
+                    </ul>
+                </div>
+                <div class="tech-item">
+                    <h4>Backend</h4>
+                    <ul>
+                        <li>Node.js + TypeScript</li>
+                        <li>Express.js</li>
+                        <li>RESTful API</li>
+                    </ul>
+                </div>
+                <div class="tech-item">
+                    <h4>Security</h4>
+                    <ul>
+                        <li>Input Validation</li>
+                        <li>Rate Limiting</li>
+                        <li>KYC/AML Compliance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="benefits">
+            <h2>Key Benefits</h2>
+            <ul>
+                <li><strong>Speed:</strong> 2-4 hours delivery time compared to traditional 3-5 days</li>
+                <li><strong>Cost:</strong> Lower fees through blockchain efficiency</li>
+                <li><strong>Transparency:</strong> Real-time tracking and status updates</li>
+                <li><strong>Security:</strong> Blockchain immutability and MoneyGram's trusted network</li>
+                <li><strong>Accessibility:</strong> Cash pickup at 4,500+ MoneyGram locations in Bangladesh</li>
+                <li><strong>Compliance:</strong> Full KYC/AML integration for regulatory compliance</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p><strong>InveStar BD</strong> - Bridging Traditional Money Transfer with Blockchain Technology</p>
+            <p>© 2024 InveStar BD. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html> 

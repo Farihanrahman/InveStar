@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  remittance-service:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - STELLAR_NETWORK=testnet
+      - STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+      - STELLAR_ANCHOR_SECRET_KEY=mock_secret_key_for_development
+      - STELLAR_ANCHOR_PUBLIC_KEY=mock_public_key_for_development
+      - USDC_ISSUER=mock_usdc_issuer_for_development
+      - MONEYGRAM_API_URL=https://api-sandbox.moneygram.com
+      - MONEYGRAM_CLIENT_ID=mock_client_id_for_development
+      - MONEYGRAM_CLIENT_SECRET=mock_client_secret_for_development
+      - MONEYGRAM_PARTNER_ID=mock_partner_id_for_development
+      - MONEYGRAM_WEBHOOK_SECRET=mock_webhook_secret_for_development
+      - JWT_SECRET=mock_jwt_secret_for_development
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+  # Optional: Add PostgreSQL for production database (uncomment if needed)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: remittance
+  #     POSTGRES_USER: remittance_user
+  #     POSTGRES_PASSWORD: remittance_password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+volumes:
+  # redis_data:
+  # postgres_data: 
