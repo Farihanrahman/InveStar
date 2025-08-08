@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Keypair, Server } from '@stellar/stellar-sdk';
+'use client'
 
-const server = new Server('https://horizon-testnet.stellar.org');
+import React, { useEffect, useState } from 'react';
+import * as StellarSdk from '@stellar/stellar-sdk';
+
+const server = new StellarSdk.Horizon.Server('https://horizon-testnet.stellar.org');
 
 export default function Home() {
   const [publicKey, setPublicKey] = useState('');
@@ -14,11 +16,9 @@ export default function Home() {
       try {
         setLoading(true);
         setError('');
-        // Generate a new testnet keypair (for demo)
-        const keypair = Keypair.random();
+        const keypair = StellarSdk.Keypair.random();
         setPublicKey(keypair.publicKey());
 
-        // Fund the account using Friendbot (testnet only)
         const resp = await fetch(`https://friendbot.stellar.org?addr=${keypair.publicKey()}`);
         if (!resp.ok) throw new Error('Friendbot funding failed');
       } catch (e) {
