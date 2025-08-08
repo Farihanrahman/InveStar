@@ -1,0 +1,53 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# Next.js
+.next/
+out/
+.cache/
+
+# Testing
+coverage/
+*.lcov
+
+# Production
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+*.tsbuildinfo
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Misc
+*.tgz
+!.vercelignore
+
+# Vercel
+.vercel/
+
+# Turbo / Nx / Monorepo tools
+turbo/
+nx-cache/
+
