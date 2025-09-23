@@ -1,0 +1,14 @@
+{
+  "appId": "com.investarbd.wrapper",
+  "appName": "InvestarBD",
+  "webDir": "dist",
+  "server": {
+    "url": "https://www.investarbd.com",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
