@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InvestarBD</string>
+    <string name="start_url">https://www.investarbd.com/</string>
+    <string name="action_open_external">Open with external app?</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_open">Open</string>
+    <string name="permission_location_rationale">This app needs location to support site features.</string>
+</resources>
+
