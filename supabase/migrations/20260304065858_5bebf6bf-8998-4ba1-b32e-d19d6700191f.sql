@@ -1,0 +1,1 @@
+ALTER TABLE public.wallet_balances DROP CONSTRAINT IF EXISTS wallet_balances_user_id_fkey;
