@@ -1,0 +1,64 @@
+project_id = "zxayzbzvvmfirlfybefd"
+
+[functions.ai-coach]
+verify_jwt = true
+
+[functions.fetch-news]
+verify_jwt = false
+
+[functions.fetch-market-data]
+verify_jwt = false
+
+[functions.create-payment-intent]
+verify_jwt = true
+
+[functions.verify-payment]
+verify_jwt = true
+
+[functions.create-stellar-wallet]
+verify_jwt = false
+
+[functions.test-stellar]
+verify_jwt = false
+
+[functions.stock-analysis]
+verify_jwt = true
+
+[functions.fetch-real-time-prices]
+verify_jwt = false
+
+[functions.stellar-usdc-transfer]
+verify_jwt = false
+
+[functions.wallet-proxy]
+verify_jwt = false
+
+[functions.stellar-anchor-ramp]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.fetch-historical-prices]
+verify_jwt = false
+
+[functions.elevenlabs-tts]
+verify_jwt = true
+
+[functions.audit-log]
+verify_jwt = true
+
+[functions.custom-wallet-proxy]
+verify_jwt = true
+
+[functions.oms-auth-proxy]
+verify_jwt = false
+
+[functions.investar-ai-chat]
+verify_jwt = false
+
+[functions.remit-agent]
+verify_jwt = false
+
+[functions.stellar-dex-swap]
+verify_jwt = false

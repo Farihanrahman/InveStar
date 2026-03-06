@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 215 30% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 215 25% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 215 25% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 200 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 215 20% 18%;
+    --muted-foreground: 215 10% 60%;
+
+    --accent: 142 76% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 200 100% 50%;
+
+    --radius: 0.5rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(200 100% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 30% 8%), hsl(215 30% 15%));
+    --gradient-web3-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(270 100% 60%), hsl(200 100% 50%));
+    --gradient-web3-accent: linear-gradient(135deg, hsl(142 76% 45%), hsl(180 100% 40%), hsl(142 76% 45%));
+    --shadow-card: 0 4px 20px -2px hsl(200 100% 50% / 0.15);
+    --shadow-glow: 0 0 30px hsl(200 100% 50% / 0.2);
+    --shadow-glow-primary: 0 0 40px hsl(200 100% 50% / 0.4), 0 0 80px hsl(200 100% 50% / 0.2), inset 0 0 20px hsl(200 100% 50% / 0.1);
+    --shadow-glow-accent: 0 0 40px hsl(142 76% 45% / 0.4), 0 0 80px hsl(142 76% 45% / 0.2), inset 0 0 20px hsl(142 76% 45% / 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 215 30% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 215 25% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 215 25% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 200 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 215 20% 18%;
+    --muted-foreground: 215 10% 60%;
+
+    --accent: 142 76% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 200 100% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(200 100% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 30% 8%), hsl(215 30% 15%));
+    --gradient-web3-primary: linear-gradient(135deg, hsl(200 100% 50%), hsl(270 100% 60%), hsl(200 100% 50%));
+    --gradient-web3-accent: linear-gradient(135deg, hsl(142 76% 45%), hsl(180 100% 40%), hsl(142 76% 45%));
+    --shadow-card: 0 4px 20px -2px hsl(200 100% 50% / 0.15);
+    --shadow-glow: 0 0 30px hsl(200 100% 50% / 0.2);
+    --shadow-glow-primary: 0 0 40px hsl(200 100% 50% / 0.4), 0 0 80px hsl(200 100% 50% / 0.2), inset 0 0 20px hsl(200 100% 50% / 0.1);
+    --shadow-glow-accent: 0 0 40px hsl(142 76% 45% / 0.4), 0 0 80px hsl(142 76% 45% / 0.2), inset 0 0 20px hsl(142 76% 45% / 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Safe area for mobile devices with notches */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Add padding to main content to account for bottom nav on mobile */
+@media (max-width: 1023px) {
+  main, .main-content {
+    padding-bottom: 5rem;
+  }
+}
+
+/* Web3 Glow Card Styles */
+@layer components {
+  .web3-card {
+    @apply relative overflow-hidden transition-all duration-500;
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(215 25% 8%) 100%);
+  }
+
+  .web3-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, transparent, hsl(var(--primary) / 0.3), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .web3-card:hover::before,
+  .web3-card:focus-within::before {
+    opacity: 1;
+  }
+
+  .web3-card-primary {
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .web3-card-primary:hover,
+  .web3-card-primary:focus-within {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: var(--shadow-glow-primary);
+    transform: translateY(-4px);
+  }
+
+  .web3-card-primary::before {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(270 100% 60% / 0.3), hsl(var(--primary) / 0.5));
+  }
+
+  .web3-card-accent {
+    border: 1px solid hsl(var(--accent) / 0.2);
+  }
+
+  .web3-card-accent:hover,
+  .web3-card-accent:focus-within {
+    border-color: hsl(var(--accent) / 0.5);
+    box-shadow: var(--shadow-glow-accent);
+    transform: translateY(-4px);
+  }
+
+  .web3-card-accent::before {
+    background: linear-gradient(135deg, hsl(var(--accent) / 0.5), hsl(180 100% 40% / 0.3), hsl(var(--accent) / 0.5));
+  }
+
+  .web3-icon {
+    @apply relative;
+  }
+
+  .web3-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+
+  .web3-card:hover .web3-icon::after,
+  .web3-card:focus-within .web3-icon::after {
+    opacity: 1;
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .web3-card-accent:hover .web3-icon::after,
+  .web3-card-accent:focus-within .web3-icon::after {
+    background: radial-gradient(circle, hsl(var(--accent) / 0.3) 0%, transparent 70%);
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+  }
+
+  .web3-btn {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .web3-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .web3-btn:hover::before {
+    left: 100%;
+  }
+}

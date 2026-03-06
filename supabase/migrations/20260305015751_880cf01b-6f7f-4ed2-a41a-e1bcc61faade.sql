@@ -1,0 +1,1 @@
+ALTER TABLE public.transactions DROP CONSTRAINT IF EXISTS transactions_user_id_fkey;
