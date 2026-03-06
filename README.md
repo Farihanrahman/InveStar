@@ -1,73 +1,368 @@
-# Welcome to your Lovable project
+# InveStar Remittance Platform
 
-## Project info
+A TypeScript React application for portfolio tracking, OMS-backed trading workflows, wallet funding, and cross-border remittance experiences, with Supabase-powered backend functions and mobile packaging through Capacitor.
 
-**URL**: https://lovable.dev/projects/18b54c75-7798-40a6-a2e8-2cc75383c86d
+## Table of Contents
 
-## How can I edit this code?
+- [Overview](#overview)
+- [Core Capabilities](#core-capabilities)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Environment Variables](#environment-variables)
+- [Environment Template](#environment-template)
+- [Development Workflows](#development-workflows)
+- [Testing](#testing)
+- [Supabase Functions and Data](#supabase-functions-and-data)
+- [Stellar and MoneyGram Integration](#stellar-and-moneygram-integration)
+- [Mobile Build Notes](#mobile-build-notes)
+- [Deployment Environments](#deployment-environments)
+- [Documentation Index](#documentation-index)
+- [Engineering Guidelines](#engineering-guidelines)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Ownership and Contacts](#ownership-and-contacts)
+- [Troubleshooting](#troubleshooting)
 
-There are several ways of editing your application.
+## Overview
 
-**Use Lovable**
+This project combines:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/18b54c75-7798-40a6-a2e8-2cc75383c86d) and start prompting.
+- Portfolio and market monitoring
+- OMS authentication and order flows
+- Wallet and payment rails integration
+- AI-assisted chat/coaching surfaces
+- Mobile-ready packaging for Android/iOS
 
-Changes made via Lovable will be committed automatically to this repo.
+The frontend runs on Vite + React. Backend integrations are handled through Supabase client calls and Supabase Edge Functions.
 
-**Use your preferred IDE**
+## Core Capabilities
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- OMS login and session handling
+- Dashboard, portfolio, orders, and virtual trading screens
+- Watchlist with persisted user data and real-time prices
+- Wallet operations and USDC transfer flows
+- Remittance and AI assistant pages
+- Push notification plumbing for mobile clients
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Architecture
 
-Follow these steps:
+```text
+React UI (pages/components)
+  -> hooks + service layer (src/hooks, src/services/oms)
+  -> API client + auth context (src/lib/api, src/lib/auth)
+  -> External systems:
+     - OMS APIs
+     - Supabase (Auth, Postgres, Edge Functions)
+     - Mobile runtime via Capacitor
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Tech Stack
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- React 18 + TypeScript
+- Vite 5
+- Tailwind CSS + Radix UI components
+- TanStack Query
+- Supabase (Auth, Postgres, Edge Functions)
+- Axios for OMS/service API calls
+- Capacitor for mobile app packaging
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Project Structure
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```text
+.
+├── src/
+│   ├── pages/                 # Route-level screens
+│   ├── components/            # Reusable UI and feature components
+│   ├── hooks/                 # Custom React hooks and API hooks
+│   ├── services/oms/          # OMS service layer
+│   ├── lib/api/               # API client/config/types
+│   ├── lib/auth/              # OMS token/auth context utilities
+│   └── integrations/supabase/ # Supabase client + generated types
+├── supabase/
+│   ├── functions/             # Edge Functions
+│   ├── migrations/            # SQL migrations
+│   └── config.toml            # Supabase local config
+├── android/                   # Capacitor Android project
+├── public/                    # Static assets
+└── *.md                       # Integration and deployment docs
+```
+
+## Prerequisites
+
+- Node.js 18+
+- npm 9+ (default package manager in this guide)
+- Git
+- Supabase project credentials
+- For mobile work:
+  - Android Studio + JDK 17
+  - Xcode (macOS) for iOS builds
+
+## Quick Start
+
+```bash
+# 1) Install dependencies
+npm install
+
+# 2) Create a .env file in project root and add required variables
+
+# 3) Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open the app at the URL shown in terminal (typically `http://localhost:5173`).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment Variables
 
-**Use GitHub Codespaces**
+Create `.env` in the repository root.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Required:
 
-## What technologies are used for this project?
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_OMS_API_BASE_URL=
+```
 
-This project is built with:
+Optional (with defaults in code):
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```env
+VITE_OMS_APP_ID=InvestarOMS
+VITE_OMS_API_VERSION=v1
+```
 
-## How can I deploy this project?
+Notes:
 
-Simply open [Lovable](https://lovable.dev/projects/18b54c75-7798-40a6-a2e8-2cc75383c86d) and click on Share -> Publish.
+- OMS base URL can be overridden at runtime from local storage (`OMS_API_BASE_URL_OVERRIDE`).
+- Keep all secrets out of source control.
 
-## Can I connect a custom domain to my Lovable project?
+## Environment Template
 
-Yes, you can!
+Use this as a starting `.env` template:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```env
+# Required
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_OMS_API_BASE_URL=
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Optional
+VITE_OMS_APP_ID=InvestarOMS
+VITE_OMS_API_VERSION=v1
+```
+
+Variable notes:
+
+- `VITE_SUPABASE_URL`: Supabase project URL.
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: Supabase public anon key used by frontend.
+- `VITE_OMS_API_BASE_URL`: OMS API domain or full base URL.
+- `VITE_OMS_APP_ID`: OMS app identifier sent by client integrations.
+- `VITE_OMS_API_VERSION`: OMS API version selector.
+
+## Development Workflows
+
+### Available Scripts
+
+```bash
+npm run dev        # Start local dev server
+npm run build      # Production build
+npm run build:dev  # Development-mode build
+npm run preview    # Preview production build locally
+npm run lint       # Lint codebase
+```
+
+### Common Local Flow
+
+```bash
+npm run lint
+npm run build
+npm run dev
+```
+
+### Routing Overview
+
+Primary routes are defined in `src/App.tsx`, including:
+
+- `/auth`, `/dashboard`, `/portfolio`, `/orders`
+- `/wallet`, `/fund-wallet`, `/send-money`
+- `/ai-coach`, `/investar-ai`, `/remit`
+
+## Testing
+
+Automated unit/integration tests are not yet configured in this repository.
+
+Current quality gate before merging:
+
+```bash
+npm run lint
+npm run build
+```
+
+Recommended manual smoke checks:
+
+- Login/logout flow (`/auth`)
+- Portfolio and watchlist rendering (`/portfolio`)
+- Order and wallet screens (`/orders`, `/wallet`)
+- AI/remittance screens (`/ai-coach`, `/remit`)
+
+## Supabase Functions and Data
+
+Edge Functions live under `supabase/functions/` and include services for:
+
+- market data and historical prices
+- wallet operations and transfer rails
+- AI chat/coaching
+- OMS auth proxying
+- notifications and audit logging
+
+Schema changes are tracked in `supabase/migrations/`.
+
+## Stellar and MoneyGram Integration
+
+This codebase includes blockchain and cash-ramp integration paths for cross-border remittance use cases.
+
+### Integration Flows
+
+- `USDC transfer on Stellar`: wallet trustline setup and token transfer via `stellar-usdc-transfer`.
+- `XLM/USDC DEX swap`: quote and execute swap via `stellar-dex-swap`.
+- `Fiat on/off-ramp simulation`: deposit/withdraw flow via `stellar-anchor-ramp`.
+- `MoneyGram ramps UI`: application and onboarding screen at `/moneygram-ramps`.
+
+### Edge Function Map
+
+- `create-stellar-wallet`: creates and stores encrypted Stellar wallet credentials.
+- `stellar-usdc-transfer`: checks trustline and sends USDC on Stellar testnet.
+- `stellar-dex-swap`: handles XLM/USDC swap logic.
+- `stellar-anchor-ramp`: anchor-based ramp flow with `moneygram` and `circle` options (currently simulated/testnet-oriented).
+- `test-stellar`: utility endpoint for Stellar test operations.
+
+### Frontend Integration Points
+
+- `src/components/BackendStellarWallet.tsx`
+- `src/components/USDCTransfer.tsx`
+- `src/components/stellar/DexSwap.tsx`
+- `src/components/FiatRamp.tsx`
+- `src/pages/MoneyGramRamps.tsx`
+- `src/pages/SendMoney.tsx`
+
+### Configuration and Secrets
+
+Frontend `.env` (already listed above):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Supabase Function secrets (set in Supabase project secrets, not in frontend `.env`):
+
+- `STELLAR_ENCRYPTION_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_ANON_KEY` (used by selected functions)
+
+### Network and Mode Notes
+
+- Current Stellar flows are primarily testnet-oriented (`horizon-testnet`, Friendbot funding paths).
+- MoneyGram-related anchor logic in current function code is simulation-oriented for development/testing.
+- If enabling production money movement, explicitly separate testnet/mainnet settings and rollout controls.
+
+### Operational Notes
+
+- Validate destination address format and transfer amount before initiating transactions.
+- Expect and handle trustline/account initialization requirements before USDC transfers.
+- Record transaction hashes and map them to internal transaction records for support and reconciliation.
+- Add retries/backoff for transient Horizon/API failures.
+
+## Mobile Build Notes
+
+Capacitor configuration is in `capacitor.config.ts`.
+
+Typical Android sync/build sequence:
+
+```bash
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+For full release workflow details, use the deployment guide linked below.
+
+## Deployment Environments
+
+Use separate Supabase and OMS credentials per environment.
+
+- `development`: local testing, non-production keys, debug logging enabled.
+- `staging`: pre-release validation, production-like APIs with test data where possible.
+- `production`: live credentials, hardened config, release-only changes.
+
+Recommended file strategy:
+
+- `.env.local` for developer machine overrides
+- `.env.staging` for staging builds
+- `.env.production` for production builds
+
+For mobile builds, run `npm run build` before `npx cap sync <platform>` to keep web assets aligned.
+
+## Documentation Index
+
+- `DEPLOYMENT_GUIDE.md`
+- `OMS_API_INTEGRATION.md`
+- `OMS_LOGIN_INTEGRATION.md`
+- `WATCHLIST_DOCUMENTATION.md`
+- `MOBILE_ASSETS_GUIDE.md`
+
+## Engineering Guidelines
+
+- Keep feature logic in `services/` + `hooks/` and keep page components focused on orchestration.
+- Prefer typed service interfaces over ad-hoc inline fetch logic.
+- Run lint and build checks before opening a PR.
+- For API or auth changes, update the corresponding integration docs.
+- Avoid committing keys, tokens, or generated secret artifacts.
+
+## Contributing
+
+Branch naming convention:
+
+- `feature/<short-description>`
+- `fix/<short-description>`
+- `chore/<short-description>`
+
+Commit message convention:
+
+- `feat: ...`
+- `fix: ...`
+- `docs: ...`
+- `chore: ...`
+
+Pull request checklist:
+
+- Run `npm run lint`
+- Run `npm run build`
+- Add screenshots for UI changes
+- Update relevant docs (`README.md` or integration guides)
+- Note environment/config changes in PR description
+
+## Security
+
+- Never commit credentials, tokens, private keys, or keystore passwords.
+- Rotate keys immediately if accidental exposure occurs.
+- Keep runtime secrets in environment variables or secure CI/CD secret stores.
+- Validate auth and tenant headers for OMS-related changes.
+- Review Supabase RLS and function access when changing data models.
+
+## Ownership and Contacts
+
+Update this section with your real team ownership map:
+
+- OMS/API integration owner: `@team-or-person`
+- Supabase functions and DB owner: `@team-or-person`
+- Mobile release owner: `@team-or-person`
+- Security escalation contact: `security@your-company.com`
+
+## Troubleshooting
+
+- `Missing VITE_* variables`: verify `.env` exists and restart the dev server.
+- `401/403 from OMS`: confirm token state and `VITE_OMS_API_BASE_URL` value.
+- `Supabase function errors`: verify project URL/key and function deployment status.
+- `Capacitor build mismatch`: run `npm run build` then `npx cap sync <platform>` again.
