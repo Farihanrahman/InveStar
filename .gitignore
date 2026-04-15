@@ -26,3 +26,5 @@ pnpm-debug.log*
 # Test and coverage artifacts
 coverage/
 .nyc_output/
+
+*.jks
