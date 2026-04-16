@@ -93,7 +93,8 @@ export const getStockPriceData = (
   const rtPrice = realTimePrices[symbol];
   const price = rtPrice?.price ?? basePrice;
   const change = rtPrice?.change ?? baseChange;
-  const changePercent = rtPrice?.changePercent ?? ((change / price) * 100);
+  const previousClose = price - change;
+  const changePercent = rtPrice?.changePercent ?? (previousClose > 0 ? ((change / previousClose) * 100) : 0);
   
   const currencySymbol = isBDT ? "৳" : "$";
   

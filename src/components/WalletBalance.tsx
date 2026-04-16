@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface WalletBalanceData {
@@ -29,12 +29,12 @@ export const WalletBalance = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [xlmBalance, setXlmBalance] = useState<string | null>(null);
+  const [onChainUsdc, setOnChainUsdc] = useState<number | null>(null);
   const { toast } = useToast();
-  const { token, user, authProvider } = useOmsAuth();
+  const { token, user } = useOmsAuth();
 
   const fetchWalletData = async () => {
     try {
-      // Use wallet-proxy for all auth types
       const { data, error } = await supabase.functions.invoke('wallet-proxy', {
         body: { 
           action: 'get_wallet',
@@ -49,7 +49,7 @@ export const WalletBalance = () => {
       if (walletData) {
         setBalance(walletData);
 
-        // Fetch live balances from Stellar Horizon if wallet exists
+        // Fetch live balances from Stellar Horizon — store separately, don't overwrite DB
         if (walletData.stellar_public_key) {
           try {
             const response = await fetch(
@@ -63,11 +63,11 @@ export const WalletBalance = () => {
               }
               const usdcBal = stellarData.balances.find((b: any) => b.asset_code === 'USDC');
               if (usdcBal) {
-                setBalance(prev => prev ? { ...prev, balance_usdc: parseFloat(usdcBal.balance) } : prev);
+                setOnChainUsdc(parseFloat(usdcBal.balance));
               }
             }
-          } catch (error) {
-            console.error('Error fetching Stellar balances:', error);
+          } catch (err) {
+            console.error('Error fetching Stellar balances:', err);
           }
         }
       }
@@ -105,19 +105,6 @@ export const WalletBalance = () => {
     }
   }, [token]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'pending':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'failed':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -127,6 +114,18 @@ export const WalletBalance = () => {
       minute: '2-digit',
     });
   };
+
+  // Use the higher of DB balance or on-chain balance for USDC
+  // This ensures simulated Circle deposits (DB-only) are reflected
+  const effectiveUsdc = Math.max(
+    balance?.balance_usdc ?? 0,
+    onChainUsdc ?? 0
+  );
+
+  // Total USDC = on-chain + any DB-only excess (simulated deposits not yet on-chain)
+  const dbUsdc = balance?.balance_usdc ?? 0;
+  const chainUsdc = onChainUsdc ?? 0;
+  const totalUsdc = chainUsdc + Math.max(0, dbUsdc - chainUsdc);
 
   if (isLoading) {
     return (
@@ -156,7 +155,13 @@ export const WalletBalance = () => {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">USDC Balance</p>
-              <p className="text-3xl font-bold">{balance?.balance_usdc?.toFixed(6) || '0.000000'} USDC</p>
+              <p className="text-3xl font-bold">{totalUsdc.toFixed(2)} USDC</p>
+              {onChainUsdc !== null && dbUsdc > chainUsdc && (
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                  <p>On-chain: {chainUsdc.toFixed(2)} USDC</p>
+                  <p className="text-primary">+ {(dbUsdc - chainUsdc).toFixed(2)} USDC (simulated)</p>
+                </div>
+              )}
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">XLM Balance</p>

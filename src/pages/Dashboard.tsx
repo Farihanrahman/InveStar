@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, RefreshCw, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 import { useConfetti } from "@/hooks/useConfetti";
 import WelcomeHeader from "@/components/WelcomeHeader";
 import AuthRequired from "@/components/AuthRequired";
+
 import { useRealTimePrices, getStockPriceData } from "@/hooks/useRealTimePrices";
 import {
   DSE_MARKET_DATA,
@@ -32,6 +34,9 @@ interface SelectedStock {
 }
 
 const Dashboard = () => {
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'dse';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStock, setSelectedStock] = useState<SelectedStock | null>(null);
   
@@ -302,7 +307,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="dse" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-2xl grid-cols-4 mb-8">
             <TabsTrigger value="dse">DSE</TabsTrigger>
             <TabsTrigger value="us">US Markets</TabsTrigger>
@@ -415,6 +420,7 @@ const Dashboard = () => {
         symbol={limitOrderSymbol}
         currentPrice={limitOrderPrice}
       />
+
     </PageLayout>
   );
 };

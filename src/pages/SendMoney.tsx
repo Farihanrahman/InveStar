@@ -19,6 +19,8 @@ import {
 import FxRateCalculator from "@/components/FxRateCalculator";
 import RemittanceInvestPrompt from "@/components/RemittanceInvestPrompt";
 import SendMoneyUSDCFlow from "@/components/SendMoneyUSDCFlow";
+import ComplianceCheckCard from "@/components/ComplianceCheckCard";
+import FeeComparison from "@/components/FeeComparison";
 
 type PaymentMethod = "bank" | "paypal" | "usdc" | "moneygram" | null;
 
@@ -131,6 +133,20 @@ const SendMoney = () => {
           <div className="mb-6">
             <FxRateCalculator onAmountChange={(val) => setAmount(val)} initialAmount={amount} />
           </div>
+
+          {/* Fee Comparison */}
+          {!selectedMethod && parseFloat(amount) > 0 && (
+            <div className="mb-6 animate-in fade-in duration-500">
+              <FeeComparison amount={parseFloat(amount) || 100} currency="BDT" />
+            </div>
+          )}
+
+          {/* Compliance Check */}
+          {!selectedMethod && (
+            <div className="mb-6 animate-in fade-in duration-500 delay-150">
+              <ComplianceCheckCard action="send_abroad" userType="nrb" amount={parseFloat(amount) || 100} />
+            </div>
+          )}
 
           {/* Investment Prompt */}
           {showInvestPrompt && selectedMethod && (

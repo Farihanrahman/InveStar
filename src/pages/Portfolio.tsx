@@ -20,19 +20,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, RefreshCw, Search, TrendingUp, TrendingDown, BarChart3, PieChart, GraduationCap, History, DollarSign, Bell, Sparkles } from "lucide-react";
+import { Plus, RefreshCw, Search, TrendingUp, TrendingDown, BarChart3, PieChart, GraduationCap, History, DollarSign, Bell, Sparkles, Bitcoin, LineChart, Layers, Building2 } from "lucide-react";
 import StockDetailView from "@/components/StockDetailView";
 import Watchlist from "@/components/Watchlist";
 import StockSearchBar from "@/components/StockSearchBar";
 import PriceAlerts from "@/components/PriceAlerts";
 import PortfolioAllocationChart from "@/components/PortfolioAllocationChart";
+
 import WelcomeHeader from "@/components/WelcomeHeader";
 import AuthRequired from "@/components/AuthRequired";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useConfetti } from "@/hooks/useConfetti";
 import { StockPrice } from "@/hooks/useRealTimePrices";
 
@@ -68,6 +69,7 @@ const Portfolio = () => {
   const userId = omsUser?.id?.toString() || null;
 
   const { triggerConfetti } = useConfetti();
+  const navigate = useNavigate();
   
   // Form states
   const [newSymbol, setNewSymbol] = useState("");
@@ -84,7 +86,9 @@ const Portfolio = () => {
   const [validity, setValidity] = useState("Day");
   const [dispQty, setDispQty] = useState("");
   const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(0);
+  const [investOptionsOpen, setInvestOptionsOpen] = useState(false);
   const [remitInvestBalance, setRemitInvestBalance] = useState(0);
+  
 
   // Load remit invest balance from localStorage
   useEffect(() => {
@@ -440,10 +444,7 @@ const Portfolio = () => {
                 <Button
                   size="sm"
                   className="gap-1"
-                  onClick={() => {
-                    openBuyDialog();
-                    toast.success(`You have $${remitInvestBalance.toFixed(2)} available to invest from remittances`);
-                  }}
+                  onClick={() => setInvestOptionsOpen(true)}
                 >
                   <TrendingUp className="w-3.5 h-3.5" /> Invest Now
                 </Button>
@@ -462,6 +463,95 @@ const Portfolio = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Invest Options Dialog */}
+        <Dialog open={investOptionsOpen} onOpenChange={setInvestOptionsOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Choose Investment Type</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                You have <span className="font-semibold text-green-500">${remitInvestBalance.toFixed(2)}</span> available from remittance savings
+              </p>
+            </DialogHeader>
+            <div className="grid gap-3 py-4">
+              {/* Bitcoin (Crypto) */}
+              <button
+                onClick={() => {
+                  setInvestOptionsOpen(false);
+                  navigate('/dashboard?tab=crypto');
+                  toast.success(`$${remitInvestBalance.toFixed(2)} available — browse crypto to invest`);
+                }}
+                className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="p-3 rounded-full bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
+                  <Bitcoin className="w-6 h-6 text-orange-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">Bitcoin (Crypto)</p>
+                  <p className="text-sm text-muted-foreground">Invest in BTC, ETH, SOL and more digital assets</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </button>
+
+              {/* Stocks (US) */}
+              <button
+                onClick={() => {
+                  setInvestOptionsOpen(false);
+                  navigate('/dashboard?tab=us');
+                  toast.success(`$${remitInvestBalance.toFixed(2)} available — browse US stocks to invest`);
+                }}
+                className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="p-3 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                  <LineChart className="w-6 h-6 text-blue-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">Stocks (US)</p>
+                  <p className="text-sm text-muted-foreground">Apple, Google, Tesla, NVIDIA and 100+ stocks</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </button>
+
+              {/* Stocks (DSE) */}
+              <button
+                onClick={() => {
+                  setInvestOptionsOpen(false);
+                  navigate('/dashboard?tab=dse');
+                  toast.success(`$${remitInvestBalance.toFixed(2)} available — browse DSE stocks to invest`);
+                }}
+                className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="p-3 rounded-full bg-teal-500/20 group-hover:bg-teal-500/30 transition-colors">
+                  <Building2 className="w-6 h-6 text-teal-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">Stocks (DSE)</p>
+                  <p className="text-sm text-muted-foreground">Square Pharma, GP, BRAC Bank, Renata and more</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </button>
+
+              {/* ETFs */}
+              <button
+                onClick={() => {
+                  setInvestOptionsOpen(false);
+                  navigate('/dashboard?tab=us');
+                  toast.success(`$${remitInvestBalance.toFixed(2)} available — search for ETFs like SPY, QQQ, VOO`);
+                }}
+                className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="p-3 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                  <Layers className="w-6 h-6 text-purple-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">ETFs</p>
+                  <p className="text-sm text-muted-foreground">SPY, QQQ, VOO, VTI — diversified index funds</p>
+                </div>
+                <TrendingUp className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Portfolio Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -878,6 +968,7 @@ const Portfolio = () => {
           onDispQtyChange={setDispQty}
         />
         </AuthRequired>
+      
     </PageLayout>
   );
 };

@@ -10,6 +10,7 @@ import { Loader2, ArrowDownUp, Building2, CheckCircle2, Info, DollarSign, Coins 
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 
 interface Anchor {
   id: string;
@@ -36,6 +37,7 @@ export const FiatRamp = ({ publicKey, availableUsdc = 0, onBalanceUpdate }: Fiat
   const [rampType, setRampType] = useState<"deposit" | "withdraw">("deposit");
   const [pendingTransaction, setPendingTransaction] = useState<any>(null);
   const { toast } = useToast();
+  const { triggerConfetti } = useConfetti();
 
   useEffect(() => {
     if (publicKey) {
@@ -140,6 +142,7 @@ export const FiatRamp = ({ publicKey, availableUsdc = 0, onBalanceUpdate }: Fiat
           title: "Success!",
           description: data.message,
         });
+        triggerConfetti('buy');
         setPendingTransaction(null);
         setAmount("");
         onBalanceUpdate?.();

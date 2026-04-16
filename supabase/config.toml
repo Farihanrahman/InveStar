@@ -62,3 +62,15 @@ verify_jwt = false
 
 [functions.stellar-dex-swap]
 verify_jwt = false
+
+[functions.usdt-intake]
+verify_jwt = false
+
+[functions.firecrawl-search]
+verify_jwt = false
+
+[functions.investar-agent]
+verify_jwt = false
+
+[functions.telegram-poll]
+verify_jwt = false

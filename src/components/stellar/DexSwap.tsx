@@ -8,6 +8,7 @@ import { Loader2, ArrowDownUp, ExternalLink, CheckCircle2, RefreshCw, AlertCircl
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 import type { StellarNetwork } from "./NetworkSwitcher";
 
 interface DexSwapProps {
@@ -18,6 +19,7 @@ interface DexSwapProps {
 export const DexSwap = ({ publicKey, network }: DexSwapProps) => {
   const { token, user } = useOmsAuth();
   const { toast } = useToast();
+  const { triggerConfetti } = useConfetti();
 
   const [sourceAsset, setSourceAsset] = useState<"XLM" | "USDC">("XLM");
   const [amount, setAmount] = useState("");
@@ -101,6 +103,7 @@ export const DexSwap = ({ publicKey, network }: DexSwapProps) => {
           title: "Swap Successful!",
           description: data.message,
         });
+        triggerConfetti('buy');
         setLastTxHash(data.transactionHash);
         setAmount("");
         setQuote(null);

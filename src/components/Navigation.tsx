@@ -6,6 +6,7 @@ import {
   Shield, Menu, User, Bell, HelpCircle, FileText, Activity, CreditCard,
   ChevronDown, PieChart, LineChart, Briefcase, ArrowLeft, Send
 } from "lucide-react";
+import LanguageToggle from "@/components/LanguageToggle";
 import investarLogo from "@/assets/investar-logo.png";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useUserInfo } from "@/hooks/useUserInfo";
@@ -52,13 +53,13 @@ const Navigation = () => {
 
   // Investing dropdown items
   const investingItems = [
+    { path: "/clawbot", label: "InveStar Agent", icon: Bot },
     { path: "/net-worth", label: "Net Worth", icon: PieChart },
     { path: "/portfolio", label: "Investments", icon: Briefcase },
     { path: "/dashboard", label: "Markets", icon: TrendingUp },
     { path: "/portfolio", label: "Portfolio", icon: LineChart },
     { path: "/virtual-trading", label: "Virtual Trading", icon: BarChart3 },
-    { path: "/investar-ai", label: "InveStar AI", icon: Bot },
-    { path: "/ai-coach", label: "AI Coach", icon: Bot },
+    { path: "/investar-ai", label: "AI Coach", icon: Bot },
     { 
       href: "https://investarbd.com/learning-platform/?_gl=1*qkzh4k*_ga*NDc0NjYxMzY3LjE3NTUxMzcwODI.*_ga_YT8X7ZGYS3*czE3NjI4OTk1MDkkbzY0JGcwJHQxNzYyODk5NTA5JGo2MCRsMCRoMTI4NTQ3NDA2NA..", 
       label: "InveStar University", 
@@ -98,7 +99,7 @@ const Navigation = () => {
     { path: "/dashboard", label: "Markets", icon: TrendingUp },
     { path: "/portfolio", label: "Portfolio", icon: BarChart3 },
     { path: "/wallet", label: "Wallet", icon: Wallet },
-    { path: "/ai-coach", label: "AI", icon: Bot },
+    { path: "/investar-ai", label: "AI", icon: Bot },
   ];
 
   const handleSignOut = async () => {
@@ -262,8 +263,9 @@ const Navigation = () => {
               </NavigationMenu>
             </div>
 
-            {/* Desktop Auth Status */}
-            <div className="hidden lg:flex items-center gap-3">
+            {/* Desktop Auth Status + Language Toggle */}
+            <div className="hidden lg:flex items-center gap-2">
+              <LanguageToggle />
               {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

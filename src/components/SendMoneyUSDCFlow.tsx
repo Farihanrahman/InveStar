@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 import { supabase } from "@/integrations/supabase/client";
 import { FiatRamp } from "@/components/FiatRamp";
+import { UsdtIntake } from "@/components/UsdtIntake";
+import { BtcInvestment } from "@/components/BtcInvestment";
 import {
   Send,
   User,
@@ -25,6 +28,8 @@ import {
   RefreshCw,
   TrendingUp,
   DollarSign,
+  Clock,
+  PartyPopper,
 } from "lucide-react";
 
 type ReceiverMethod = "stellar" | "bank" | "mobile" | null;
@@ -45,9 +50,10 @@ interface SendMoneyUSDCFlowProps {
   investmentAmount?: number;
 }
 
-type SendCurrency = "XLM" | "USD" | "USDC";
+type SendCurrency = "XLM" | "USD" | "USDC" | "USDT";
 
 const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUSDCFlowProps) => {
+  const { triggerConfetti } = useConfetti();
   const [activeTab, setActiveTab] = useState<"sender" | "receiver">("sender");
   const [walletBalance, setWalletBalance] = useState<{
     usd: number; usdc: number; xlm: number; publicKey: string | null;
@@ -69,11 +75,31 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
   // DEX Swap state
   const [showDexSwap, setShowDexSwap] = useState(false);
   const [showConvert, setShowConvert] = useState(false);
+  const [showUsdtIntake, setShowUsdtIntake] = useState(false);
+  const [showBtcInvest, setShowBtcInvest] = useState(false);
   const [swapFrom, setSwapFrom] = useState<"XLM" | "USDC">("XLM");
   const [swapAmount, setSwapAmount] = useState("");
   const [swapQuote, setSwapQuote] = useState<string | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [swapping, setSwapping] = useState(false);
+
+  // Transfer completion state
+  interface CompletedTransfer {
+    id: string;
+    amount: number;
+    currency: SendCurrency;
+    receiverMethod: ReceiverMethod;
+    receiverDetails: ReceiverDetails;
+    timestamp: string;
+    investmentAmount: number;
+  }
+  const [completedTransfer, setCompletedTransfer] = useState<CompletedTransfer | null>(null);
+  const [transferHistory, setTransferHistory] = useState<CompletedTransfer[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("send_money_history") || "[]");
+    } catch { return []; }
+  });
+  const [showHistory, setShowHistory] = useState(false);
 
   // Computed: amount receiver gets after investment deduction
   const parsedSendAmount = parseFloat(sendAmount) || 0;
@@ -83,6 +109,7 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
     if (!walletBalance) return 0;
     if (currency === "XLM") return walletBalance.xlm;
     if (currency === "USD") return walletBalance.usd;
+    if (currency === "USDT") return 0; // USDT is external — no local balance
     return walletBalance.usdc;
   };
 
@@ -153,8 +180,31 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
   };
 
   const handleSend = () => {
-    toast({ title: "Transfer Initiated", description: `Sending ${receiverGets.toFixed(2)} ${sendCurrency} to receiver.` });
+    const transfer: CompletedTransfer = {
+      id: `TXN-${Date.now().toString(36).toUpperCase()}`,
+      amount: receiverGets,
+      currency: sendCurrency,
+      receiverMethod,
+      receiverDetails: { ...receiver },
+      timestamp: new Date().toISOString(),
+      investmentAmount,
+    };
+    setCompletedTransfer(transfer);
+    const updatedHistory = [transfer, ...transferHistory].slice(0, 50);
+    setTransferHistory(updatedHistory);
+    localStorage.setItem("send_money_history", JSON.stringify(updatedHistory));
+    triggerConfetti('buy');
+    toast({ title: "Transfer Successful! 🎉", description: `${receiverGets.toFixed(2)} ${sendCurrency} sent successfully.` });
   };
+
+  const getReceiverLabel = (t: CompletedTransfer) => {
+    if (t.receiverMethod === "stellar") return `Stellar: ${t.receiverDetails.stellarAddress?.slice(0, 8)}...`;
+    if (t.receiverMethod === "bank") return `Bank: ${t.receiverDetails.accountHolder || ""}`;
+    if (t.receiverMethod === "mobile") return `${t.receiverDetails.mobileProvider}: ${t.receiverDetails.mobileNumber}`;
+    return "Unknown";
+  };
+
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
   const truncateKey = (key: string) => `${key.slice(0, 8)}...${key.slice(-8)}`;
 
@@ -223,6 +273,99 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
 
   return (
     <div className="space-y-4">
+      {/* ===== COMPLETED TRANSFER RECEIPT ===== */}
+      {completedTransfer ? (
+        <div className="space-y-4 animate-fade-in">
+          <Card className="border-green-500/30 bg-gradient-to-br from-green-500/5 to-primary/5">
+            <CardContent className="p-6 space-y-5">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                  <CheckCircle className="w-8 h-8 text-green-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-green-500">Transfer Complete!</h2>
+                <p className="text-sm text-muted-foreground">Your money is on its way</p>
+              </div>
+
+              <div className="space-y-3 p-4 rounded-xl bg-muted/50 border">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Transaction ID</span>
+                  <span className="font-mono font-medium">{completedTransfer.id}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Amount Sent</span>
+                  <span className="font-semibold">{completedTransfer.amount.toFixed(2)} {completedTransfer.currency}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Recipient</span>
+                  <span className="font-medium">{getReceiverLabel(completedTransfer)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Method</span>
+                  <Badge variant="outline" className="capitalize">{completedTransfer.receiverMethod}</Badge>
+                </div>
+                {completedTransfer.investmentAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Invested</span>
+                    <span className="text-green-500 font-medium">${completedTransfer.investmentAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Date</span>
+                  <span>{formatDate(completedTransfer.timestamp)}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => {
+                  setCompletedTransfer(null);
+                  setReceiverMethod(null);
+                  setReceiver({ method: null });
+                  setSendAmount(amount);
+                  setActiveTab("sender");
+                }}>
+                  Send Another
+                </Button>
+                <Button className="flex-1" onClick={onBack}>
+                  Done
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Transfer History */}
+          {transferHistory.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Transfer History
+                  <Badge variant="secondary" className="text-[10px]">{transferHistory.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+                {transferHistory.slice(0, showHistory ? 50 : 5).map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border text-sm">
+                    <div className="space-y-0.5">
+                      <p className="font-medium">{tx.amount.toFixed(2)} {tx.currency}</p>
+                      <p className="text-xs text-muted-foreground">{getReceiverLabel(tx)}</p>
+                    </div>
+                    <div className="text-right space-y-0.5">
+                      <Badge variant="outline" className="text-green-500 border-green-500/30 text-[10px]">Completed</Badge>
+                      <p className="text-[10px] text-muted-foreground">{formatDate(tx.timestamp)}</p>
+                    </div>
+                  </div>
+                ))}
+                {transferHistory.length > 5 && (
+                  <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setShowHistory(!showHistory)}>
+                    {showHistory ? "Show Less" : `Show All (${transferHistory.length})`}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : (
+        <>
       {/* Back + Title */}
       <div className="flex items-center gap-3 mb-2">
         <Button variant="ghost" size="sm" onClick={onBack}>← Back</Button>
@@ -297,24 +440,25 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
                   {/* Choose Currency to Send */}
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Select currency to send</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {([
                         { key: "XLM" as SendCurrency, label: "XLM", sub: "Stellar", value: walletBalance.xlm },
                         { key: "USD" as SendCurrency, label: "USD", sub: "Bank", value: walletBalance.usd },
                         { key: "USDC" as SendCurrency, label: "USDC", sub: "Wallet", value: walletBalance.usdc },
+                        { key: "USDT" as SendCurrency, label: "USDT", sub: "Multi-Chain", value: 0 },
                       ]).map(({ key, label, sub, value }) => (
                         <button
                           key={key}
                           onClick={() => setSendCurrency(key)}
-                          className={`p-3 rounded-lg border-2 text-center transition-all ${
+                          className={`p-2.5 rounded-lg border-2 text-center transition-all ${
                             sendCurrency === key
                               ? "border-primary bg-primary/10 shadow-sm"
                               : "border-border bg-accent/10 hover:border-primary/40"
                           }`}
                         >
                           <p className="text-[10px] text-muted-foreground mb-0.5">{label}</p>
-                          <p className="text-lg font-bold">{label === "USD" ? "$" : ""}{value.toFixed(2)}</p>
-                          <Badge variant={sendCurrency === key ? "default" : "secondary"} className="text-[9px] mt-1">{sub}</Badge>
+                          <p className="text-base font-bold">{label === "USD" ? "$" : ""}{key === "USDT" ? "—" : value.toFixed(2)}</p>
+                          <Badge variant={sendCurrency === key ? "default" : "secondary"} className="text-[8px] mt-1">{sub}</Badge>
                         </button>
                       ))}
                     </div>
@@ -366,27 +510,58 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
                     </div>
                   )}
 
-                  {/* Add Funds Button */}
+                  {/* Add Funds / Convert / USDT / BTC */}
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
-                      className="gap-2 h-11"
+                      className="gap-1.5 h-11 text-xs"
                       onClick={() => window.location.href = "/fund-wallet"}
                     >
-                      <Plus className="w-4 h-4" /> Add Funds
+                      <Plus className="w-3.5 h-3.5" /> Add Funds
                     </Button>
                     <Button
                       variant="outline"
-                      className="gap-2 h-11"
-                      onClick={() => setShowConvert(!showConvert)}
+                      className="gap-1.5 h-11 text-xs"
+                      onClick={() => { setShowConvert(!showConvert); setShowUsdtIntake(false); setShowBtcInvest(false); }}
                     >
-                      <DollarSign className="w-4 h-4" /> Convert USD ↔ USDC
+                      <DollarSign className="w-3.5 h-3.5" /> USD ↔ USDC
+                    </Button>
+                    <Button
+                      variant={showUsdtIntake ? "default" : "outline"}
+                      className="gap-1.5 h-11 text-xs"
+                      onClick={() => { setShowUsdtIntake(!showUsdtIntake); setShowConvert(false); setShowBtcInvest(false); }}
+                    >
+                      <ArrowDownUp className="w-3.5 h-3.5" /> USDT → USDC
+                    </Button>
+                    <Button
+                      variant={showBtcInvest ? "default" : "outline"}
+                      className="gap-1.5 h-11 text-xs border-orange-500/30 hover:border-orange-500/60"
+                      onClick={() => { setShowBtcInvest(!showBtcInvest); setShowConvert(false); setShowUsdtIntake(false); }}
+                    >
+                      <TrendingUp className="w-3.5 h-3.5" /> Invest in ₿
                     </Button>
                   </div>
 
                   {/* Fiat Ramp - Convert USD ↔ USDC */}
                   {showConvert && walletBalance.publicKey && (
                     <FiatRamp
+                      publicKey={walletBalance.publicKey}
+                      availableUsdc={walletBalance.usdc}
+                      onBalanceUpdate={() => { setLoading(true); fetchBalance(); }}
+                    />
+                  )}
+
+                  {/* USDT Intake - Fund with USDT */}
+                  {showUsdtIntake && walletBalance.publicKey && (
+                    <UsdtIntake
+                      publicKey={walletBalance.publicKey}
+                      onBalanceUpdate={() => { setLoading(true); fetchBalance(); }}
+                    />
+                  )}
+
+                  {/* Bitcoin Investment */}
+                  {showBtcInvest && walletBalance.publicKey && (
+                    <BtcInvestment
                       publicKey={walletBalance.publicKey}
                       availableUsdc={walletBalance.usdc}
                       onBalanceUpdate={() => { setLoading(true); fetchBalance(); }}
@@ -668,6 +843,8 @@ const SendMoneyUSDCFlow = ({ amount, onBack, investmentAmount = 0 }: SendMoneyUS
             </div>
           </CardContent>
         </Card>
+      )}
+        </>
       )}
     </div>
   );

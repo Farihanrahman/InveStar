@@ -38,7 +38,7 @@ serve(async (req) => {
     console.log('Testing Stellar testnet connection for user:', user.id);
 
     // Dynamically import Stellar SDK
-    const StellarSdk = await import('https://esm.sh/@stellar/stellar-sdk@12.3.0');
+    const StellarSdk = await import('https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle');
     
     // Test 1: Generate a keypair (only log public key, never log secret)
     const keypair = StellarSdk.Keypair.random();

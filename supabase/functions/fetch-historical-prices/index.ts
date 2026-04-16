@@ -27,6 +27,18 @@ const dseBasePrices: Record<string, number> = {
   "LANKABAFIN": 32.40,
 };
 
+// Crypto symbol mapping for Yahoo Finance (crypto uses -USD suffix)
+const cryptoYahooMap: Record<string, string> = {
+  'BTC': 'BTC-USD',
+  'ETH': 'ETH-USD',
+  'SOL': 'SOL-USD',
+  'XLM': 'XLM-USD',
+  'ADA': 'ADA-USD',
+  'DOT': 'DOT-USD',
+  'DOGE': 'DOGE-USD',
+  'USDC': 'USDC-USD',
+};
+
 // Symbol corrections for Yahoo Finance API
 const symbolCorrections: Record<string, string> = {
   'NVIDIA': 'NVDA',
@@ -115,9 +127,9 @@ serve(async (req) => {
 
     console.log(`Fetching historical data for ${symbol}, period: ${period}`);
 
-    // Apply symbol corrections
+    // Apply symbol corrections (crypto needs -USD suffix, others may have name corrections)
     const upperSymbol = symbol.toUpperCase();
-    const correctedSymbol = symbolCorrections[upperSymbol] || symbol;
+    const correctedSymbol = cryptoYahooMap[upperSymbol] || symbolCorrections[upperSymbol] || symbol;
 
     // Check if this is a DSE symbol that needs fallback data
     if (dseSymbols.includes(upperSymbol)) {

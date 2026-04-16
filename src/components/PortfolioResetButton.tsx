@@ -46,7 +46,7 @@ const PortfolioResetButton = ({ onReset }: PortfolioResetButtonProps) => {
       // Reset portfolio balance to $10,000
       const { error: portfolioError } = await supabase
         .from("virtual_portfolios")
-        .update({ virtual_balance: 10000.00 })
+        .update({ virtual_balance: 1000000.00 })
         .eq("user_id", session.user.id);
 
       if (portfolioError) throw portfolioError;
@@ -59,7 +59,7 @@ const PortfolioResetButton = ({ onReset }: PortfolioResetButtonProps) => {
 
       if (alertsError) throw alertsError;
 
-      toast.success("Portfolio reset to $10,000", {
+      toast.success("Portfolio reset to $1,000,000", {
         description: "All trades, orders, and alerts have been cleared.",
       });
 
@@ -84,7 +84,7 @@ const PortfolioResetButton = ({ onReset }: PortfolioResetButtonProps) => {
           <AlertDialogTitle>Reset Virtual Portfolio?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete all your virtual trades, orders, and alerts,
-            and reset your balance back to $10,000. This action cannot be undone.
+            and reset your balance back to $1,000,000. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

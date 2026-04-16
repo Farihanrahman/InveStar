@@ -5,7 +5,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Fallback prices (updated regularly as baseline)
+// DSE symbols that should NOT go to Yahoo Finance
+const DSE_SYMBOLS = new Set([
+  'DSEBD', 'SQURPHARMA', 'BATBC', 'GP', 'BRAC', 'BRACBANK',
+  'RENATA', 'BEXIMCO', 'WALTONHIL', 'ICB', 'LANKABAFIN',
+]);
+
+// Fallback prices (baseline when live data unavailable)
 const fallbackPrices: Record<string, { price: number; change: number }> = {
   // US Stocks
   AAPL: { price: 189.95, change: 1.23 },
@@ -35,7 +41,7 @@ const fallbackPrices: Record<string, { price: number; change: number }> = {
   JPM: { price: 248.56, change: 2.34 },
   V: { price: 322.15, change: 3.45 },
   WMT: { price: 98.45, change: 0.67 },
-  // DSE Bangladesh
+  // DSE Bangladesh (updated fallbacks)
   DSEBD: { price: 6234.45, change: 45.23 },
   SQURPHARMA: { price: 245.80, change: 5.20 },
   BATBC: { price: 485.50, change: -3.20 },
@@ -44,6 +50,9 @@ const fallbackPrices: Record<string, { price: number; change: number }> = {
   BRACBANK: { price: 48.25, change: -0.75 },
   RENATA: { price: 892.50, change: 12.50 },
   BEXIMCO: { price: 112.30, change: 2.45 },
+  WALTONHIL: { price: 1245.00, change: -15.30 },
+  ICB: { price: 87.50, change: 1.25 },
+  LANKABAFIN: { price: 32.40, change: 0.45 },
   // Crypto
   BTC: { price: 43250.00, change: 1250.00 },
   ETH: { price: 2280.00, change: 85.50 },
@@ -62,9 +71,209 @@ const fallbackPrices: Record<string, { price: number; change: number }> = {
   USDCHF: { price: 0.8745, change: 0.0015 },
 };
 
+// Fetch DSE prices using Firecrawl scraping
+async function fetchDSEPrices(symbols: string[]): Promise<Record<string, { price: number; change: number; changePercent: number }>> {
+  const results: Record<string, { price: number; change: number; changePercent: number }> = {};
+  const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
+  
+  if (!firecrawlKey) {
+    console.log('No FIRECRAWL_API_KEY — using fallback for DSE stocks');
+    return results;
+  }
+
+  try {
+    // Scrape DSE latest share price page
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: 'https://www.dsebd.org/latest_share_price_scroll_l.php',
+        formats: ['markdown'],
+        onlyMainContent: true,
+        waitFor: 3000,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`DSE scrape failed: ${response.status}`);
+      // Try individual MarketWatch scrapes as fallback
+      return await fetchDSEFromMarketWatch(symbols, firecrawlKey);
+    }
+
+    const data = await response.json();
+    const markdown = data?.data?.markdown || data?.markdown || '';
+    
+    if (!markdown) {
+      console.log('No markdown from DSE scrape, trying MarketWatch');
+      return await fetchDSEFromMarketWatch(symbols, firecrawlKey);
+    }
+
+    // Parse DSE table data from markdown
+    // DSE table typically has: TRADING CODE | LTP | HIGH | LOW | CLOSEP | YCP | CHANGE | TRADE | VALUE | VOLUME
+    for (const symbol of symbols) {
+      if (symbol === 'DSEBD') continue; // Index handled separately
+      
+      // Look for the symbol in the markdown table
+      const lines = markdown.split('\n');
+      for (const line of lines) {
+        // Match lines containing the symbol
+        if (line.includes(symbol)) {
+          // Extract numbers from the line
+          const numbers = line.match(/[\d,]+\.?\d*/g);
+          if (numbers && numbers.length >= 3) {
+            const cleanNumbers = numbers.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => !isNaN(n) && n > 0);
+            
+            if (cleanNumbers.length >= 2) {
+              // DSE table: TRADING CODE | LTP | HIGH | LOW | CLOSEP | YCP | CHANGE
+              // The LTP is often the first number, but we need sanity checking
+              const expectedPrice = fallbackPrices[symbol]?.price || 100;
+              
+              // Find the number closest to expected price among reasonable candidates
+              let bestLtp = cleanNumbers[0];
+              let bestDist = Math.abs(bestLtp - expectedPrice);
+              for (const num of cleanNumbers.slice(0, 8)) {
+                const dist = Math.abs(num - expectedPrice);
+                if (dist < bestDist && num > expectedPrice * 0.3 && num < expectedPrice * 3) {
+                  bestLtp = num;
+                  bestDist = dist;
+                }
+              }
+              
+              // Sanity check: reject if too far from expected
+              if (bestLtp < expectedPrice * 0.3 || bestLtp > expectedPrice * 3) {
+                console.log(`DSE price ${bestLtp} for ${symbol} too far from expected ${expectedPrice}, skipping`);
+                continue;
+              }
+              
+              let change = 0;
+              let changePercent = 0;
+              
+              if (cleanNumbers.length >= 5) {
+                // Find YCP: a number close to LTP (within 10%)
+                for (let ci = 1; ci < Math.min(cleanNumbers.length, 7); ci++) {
+                  const candidate = cleanNumbers[ci];
+                  if (candidate !== bestLtp && Math.abs(bestLtp - candidate) < bestLtp * 0.1 && candidate > bestLtp * 0.5) {
+                    change = bestLtp - candidate;
+                    changePercent = (change / candidate) * 100;
+                    break;
+                  }
+                }
+              }
+              
+              results[symbol] = {
+                price: Math.round(bestLtp * 100) / 100,
+                change: Math.round(change * 100) / 100,
+                changePercent: Math.round(changePercent * 100) / 100,
+              };
+              console.log(`Got DSE price for ${symbol}: ৳${bestLtp}`);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // For DSEBD index, try to find it in the page
+    if (symbols.includes('DSEBD')) {
+      const indexMatch = markdown.match(/DSEX[:\s]*Index[:\s]*([\d,.]+)/i) || 
+                         markdown.match(/DSEX[:\s]*([\d,.]+)/i) ||
+                         markdown.match(/([\d,]+\.\d+).*(?:DSEX|Index)/i);
+      if (indexMatch) {
+        const indexValue = parseFloat(indexMatch[1].replace(/,/g, ''));
+        if (indexValue > 1000) {
+          results['DSEBD'] = { price: indexValue, change: 0, changePercent: 0 };
+          console.log(`Got DSE index: ${indexValue}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching DSE prices:', error);
+  }
+
+  return results;
+}
+
+// Fallback: fetch individual DSE stocks from MarketWatch
+async function fetchDSEFromMarketWatch(symbols: string[], firecrawlKey: string): Promise<Record<string, { price: number; change: number; changePercent: number }>> {
+  const results: Record<string, { price: number; change: number; changePercent: number }> = {};
+  
+  // MarketWatch DSE symbol mapping
+  const mwSymbols: Record<string, string> = {
+    GP: 'gp',
+    SQURPHARMA: 'squrpharma',
+    BATBC: 'batbc',
+    BRAC: 'brac',
+    BRACBANK: 'bracbank',
+    RENATA: 'renata',
+    BEXIMCO: 'beximco',
+    WALTONHIL: 'waltonhil',
+    ICB: 'icb',
+    LANKABAFIN: 'lankabafin',
+  };
+
+  // Only fetch a few to avoid rate limits
+  const toFetch = symbols.filter(s => mwSymbols[s]).slice(0, 5);
+  
+  for (const symbol of toFetch) {
+    try {
+      const mwSym = mwSymbols[symbol];
+      if (!mwSym) continue;
+      
+      const resp = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: `https://www.marketwatch.com/investing/stock/${mwSym}?countrycode=bd`,
+          formats: ['markdown'],
+          onlyMainContent: true,
+        }),
+      });
+
+      if (!resp.ok) continue;
+      
+      const data = await resp.json();
+      const md = data?.data?.markdown || data?.markdown || '';
+      
+      // MarketWatch typically shows price prominently
+      // Look for BDT price pattern
+      const priceMatch = md.match(/(?:BDT|৳|Tk\.?)\s*([\d,]+\.?\d*)/i) ||
+                         md.match(/(?:Last|Price|Close)[:\s]*(?:BDT|৳)?\s*([\d,]+\.?\d*)/i) ||
+                         md.match(/\b([\d,]+\.\d{2})\b.*(?:BDT|Taka)/i);
+      
+      if (priceMatch) {
+        const price = parseFloat(priceMatch[1].replace(/,/g, ''));
+        if (price > 1) { // Sanity check
+          const changeMatch = md.match(/([+-]?\d+\.?\d*)\s*(?:%|percent)/i);
+          const changePercent = changeMatch ? parseFloat(changeMatch[1]) : 0;
+          const change = (price * changePercent) / 100;
+          
+          results[symbol] = {
+            price: Math.round(price * 100) / 100,
+            change: Math.round(change * 100) / 100,
+            changePercent: Math.round(changePercent * 100) / 100,
+          };
+          console.log(`Got MarketWatch DSE price for ${symbol}: ৳${price}`);
+        }
+      }
+      
+      // Small delay between requests
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } catch (e) {
+      console.error(`MarketWatch fetch failed for ${symbol}:`, e);
+    }
+  }
+  
+  return results;
+}
+
 async function fetchYahooFinancePrice(symbol: string): Promise<{ price: number; change: number; changePercent: number } | null> {
   try {
-    // Use Yahoo Finance v8 API
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
     
     const response = await fetch(url, {
@@ -191,67 +400,107 @@ serve(async (req) => {
 
     const prices: Record<string, { price: number; change: number; changePercent: number }> = {};
     
-    // Process symbols in batches to avoid rate limiting
-    const batchSize = 5;
-    for (let i = 0; i < symbols.length; i += batchSize) {
-      const batch = symbols.slice(i, i + batchSize);
-      
-      const batchPromises = batch.map(async (symbol: string) => {
-        const upperSymbol = symbol.toUpperCase();
+    // Separate DSE symbols from others
+    const dseSymbols = symbols.filter((s: string) => DSE_SYMBOLS.has(s.toUpperCase()));
+    const otherSymbols = symbols.filter((s: string) => !DSE_SYMBOLS.has(s.toUpperCase()));
+    
+    // Fetch DSE prices via Firecrawl (in parallel with other fetches)
+    const dsePromise = dseSymbols.length > 0 ? fetchDSEPrices(dseSymbols) : Promise.resolve({});
+    
+    // Process non-DSE symbols in batches
+    const otherPromise = (async () => {
+      const batchSize = 5;
+      for (let i = 0; i < otherSymbols.length; i += batchSize) {
+        const batch = otherSymbols.slice(i, i + batchSize);
         
-        // Apply symbol corrections for common name variations
-        const correctedSymbol = symbolCorrections[upperSymbol] || symbol;
-        
-        // Check if it's a crypto
-        const cryptoId = cryptoMap[upperSymbol];
-        if (cryptoId) {
-          const cryptoPrice = await fetchCoinGeckoPrice(cryptoId);
-          if (cryptoPrice) {
-            prices[symbol] = cryptoPrice;
-            console.log(`Got CoinGecko price for ${symbol}: $${cryptoPrice.price}`);
+        const batchPromises = batch.map(async (symbol: string) => {
+          const upperSymbol = symbol.toUpperCase();
+          const correctedSymbol = symbolCorrections[upperSymbol] || symbol;
+          
+          // Check if it's a crypto
+          const cryptoId = cryptoMap[upperSymbol];
+          if (cryptoId) {
+            const cryptoPrice = await fetchCoinGeckoPrice(cryptoId);
+            if (cryptoPrice) {
+              prices[symbol] = cryptoPrice;
+              console.log(`Got CoinGecko price for ${symbol}: $${cryptoPrice.price}`);
+              return;
+            }
+            // Fallback: try Yahoo Finance with -USD suffix for crypto
+            const yahooSymbol = `${upperSymbol}-USD`;
+            const yahooCryptoPrice = await fetchYahooFinancePrice(yahooSymbol);
+            if (yahooCryptoPrice) {
+              prices[symbol] = yahooCryptoPrice;
+              console.log(`Got Yahoo crypto price for ${symbol}: $${yahooCryptoPrice.price}`);
+              return;
+            }
+          }
+
+          // Check if it's a forex pair
+          const forexSymbol = forexMap[upperSymbol];
+          if (forexSymbol) {
+            const forexPrice = await fetchYahooFinancePrice(forexSymbol);
+            if (forexPrice) {
+              prices[symbol] = forexPrice;
+              console.log(`Got Yahoo Forex price for ${symbol}: ${forexPrice.price}`);
+              return;
+            }
+          }
+
+          // Try Yahoo Finance for stocks/ETFs
+          const yahooPrice = await fetchYahooFinancePrice(correctedSymbol);
+          if (yahooPrice) {
+            prices[symbol] = yahooPrice;
+            console.log(`Got Yahoo price for ${symbol} (${correctedSymbol}): $${yahooPrice.price}`);
             return;
           }
-        }
 
-        // Check if it's a forex pair
-        const forexSymbol = forexMap[upperSymbol];
-        if (forexSymbol) {
-          const forexPrice = await fetchYahooFinancePrice(forexSymbol);
-          if (forexPrice) {
-            prices[symbol] = forexPrice;
-            console.log(`Got Yahoo Forex price for ${symbol}: ${forexPrice.price}`);
-            return;
+          // Fallback to stored prices with small variation
+          const fallback = fallbackPrices[upperSymbol] || fallbackPrices[correctedSymbol];
+          if (fallback) {
+            const variation = (Math.random() - 0.5) * 0.005;
+            const price = fallback.price * (1 + variation);
+            const change = fallback.change + (Math.random() - 0.5) * 0.1;
+            const previousClose = price - change;
+            prices[symbol] = {
+              price: Math.round(price * 100) / 100,
+              change: Math.round(change * 100) / 100,
+              changePercent: Math.round((previousClose > 0 ? (change / previousClose) * 100 : 0) * 100) / 100,
+            };
+            console.log(`Using fallback for ${symbol}: $${prices[symbol].price}`);
           }
-        }
+        });
 
-        // Try Yahoo Finance for stocks/ETFs (use corrected symbol)
-        const yahooPrice = await fetchYahooFinancePrice(correctedSymbol);
-        if (yahooPrice) {
-          prices[symbol] = yahooPrice;
-          console.log(`Got Yahoo price for ${symbol} (${correctedSymbol}): $${yahooPrice.price}`);
-          return;
+        await Promise.all(batchPromises);
+        
+        if (i + batchSize < otherSymbols.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
+      }
+    })();
 
-        // Fallback to stored prices with small variation (check both original and corrected)
-        const fallback = fallbackPrices[upperSymbol] || fallbackPrices[correctedSymbol];
+    // Wait for both DSE and other fetches
+    const [dsePrices] = await Promise.all([dsePromise, otherPromise]);
+    
+    // Merge DSE prices
+    for (const [symbol, priceData] of Object.entries(dsePrices)) {
+      prices[symbol] = priceData;
+    }
+    
+    // Fill any missing DSE symbols with fallbacks
+    for (const symbol of dseSymbols) {
+      if (!prices[symbol]) {
+        const fallback = fallbackPrices[symbol.toUpperCase()];
         if (fallback) {
-          const variation = (Math.random() - 0.5) * 0.005; // ±0.25% variation
+          const variation = (Math.random() - 0.5) * 0.005;
           const price = fallback.price * (1 + variation);
-          const change = fallback.change + (Math.random() - 0.5) * 0.1;
           prices[symbol] = {
             price: Math.round(price * 100) / 100,
-            change: Math.round(change * 100) / 100,
-            changePercent: Math.round((change / price) * 100 * 100) / 100,
+            change: Math.round(fallback.change * 100) / 100,
+            changePercent: Math.round((fallback.price > 0 ? (fallback.change / fallback.price) * 100 : 0) * 100) / 100,
           };
-          console.log(`Using fallback for ${symbol}: $${prices[symbol].price}`);
+          console.log(`Using DSE fallback for ${symbol}: ৳${prices[symbol].price}`);
         }
-      });
-
-      await Promise.all(batchPromises);
-      
-      // Small delay between batches to avoid rate limiting
-      if (i + batchSize < symbols.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
 
@@ -261,7 +510,7 @@ serve(async (req) => {
       JSON.stringify({ 
         prices, 
         timestamp: new Date().toISOString(),
-        source: 'yahoo_finance_coingecko'
+        source: 'yahoo_finance_coingecko_dse'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
