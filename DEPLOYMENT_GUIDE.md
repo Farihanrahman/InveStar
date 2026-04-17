@@ -18,10 +18,8 @@
 
 ## Step 1: Set Up the Project Locally
 
-### 1.1 Export and Clone Repository
+### 1.1 Clone Repository
 ```bash
-# In Lovable, click "Export to GitHub" to transfer the project
-# Then clone from your GitHub repository
 git clone [your-github-repo-url]
 cd investar-wallet-hub
 ```
@@ -58,7 +56,7 @@ npx cap open ios
    - Select the project in the navigator
    - Under "Signing & Capabilities":
      - Select your Apple Developer Team
-     - Change Bundle Identifier if needed: `app.lovable.18b54c75779840a6a2e82cc75383c86d`
+     - Change Bundle Identifier to: `com.investar.mobile`
    - Update app name to "InveStar"
    - Set minimum iOS version to 13.0 or higher
 
@@ -128,7 +126,7 @@ npx cap open android
      ```gradle
      android {
          defaultConfig {
-             applicationId "app.lovable.18b54c75779840a6a2e82cc75383c86d"
+             applicationId "com.investar.mobile"
              minSdkVersion 22
              targetSdkVersion 34
              versionCode 1
@@ -226,16 +224,16 @@ cd android
 keytool -list -v -keystore investar-release-key.keystore -alias investar
 ```
 
-2. **Update Supabase Auth Settings:**
-   - In Lovable Cloud backend, configure OAuth redirect URLs:
-     - iOS: `app.lovable.18b54c75779840a6a2e82cc75383c86d://callback`
-     - Android: `app.lovable.18b54c75779840a6a2e82cc75383c86d://callback`
+2. **Update Auth Settings:**
+   - Configure OAuth redirect URLs in your backend:
+     - iOS: `com.investar.mobile://callback`
+     - Android: `com.investar.mobile://callback`
 
 ### 4.2 Enable Stripe Integration
 
 1. **Configure Stripe:**
    - Get Stripe publishable key and secret key
-   - Add to Lovable Cloud secrets
+   - Add to backend secrets
    
 2. **Add Native Stripe SDK (if needed):**
    - iOS: Add via CocoaPods
@@ -299,7 +297,7 @@ npx cap open ios  # or android
 ## Important Notes
 
 ### Hot Reload Configuration
-The app is currently configured to load from: `https://18b54c75-7798-40a6-a2e8-2cc75383c86d.lovableproject.com`
+The app may be configured to load from a remote dev server URL during development.
 
 **Before production release:**
 - Remove the `server` section from `capacitor.config.ts`
@@ -322,8 +320,8 @@ The app is currently configured to load from: `https://18b54c75-7798-40a6-a2e8-2
 - **Capacitor Docs:** https://capacitorjs.com/docs
 - **Apple Developer:** https://developer.apple.com
 - **Google Play Console:** https://support.google.com/googleplay/android-developer
-- **Lovable Docs:** https://docs.lovable.dev
-- **Lovable Community:** https://discord.com/channels/1119885301872070706/1280461670979993613
+- **Supabase Docs:** https://supabase.com/docs
+- **Stellar Docs:** https://developers.stellar.org
 
 ---
 

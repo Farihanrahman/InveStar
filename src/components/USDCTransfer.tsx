@@ -8,13 +8,16 @@ import { Loader2, Send, Plus, CheckCircle2, ExternalLink, AlertCircle, DollarSig
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 import { isValidStellarAddress } from "@/lib/validation";
+import type { StellarNetwork } from "@/components/stellar/NetworkSwitcher";
 
 interface USDCTransferProps {
   publicKey: string | null;
+  network?: StellarNetwork;
 }
 
-export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
+export const USDCTransfer = ({ publicKey, network = "testnet" }: USDCTransferProps) => {
   const { token, user } = useOmsAuth();
   const [hasTrustline, setHasTrustline] = useState(false);
   const [usdcBalance, setUsdcBalance] = useState("0");
@@ -26,10 +29,11 @@ export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
   const [addressError, setAddressError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { triggerConfetti } = useConfetti();
 
   useEffect(() => {
     if (publicKey) checkTrustline();
-  }, [publicKey]);
+  }, [publicKey, network]);
 
   const handleAddressChange = (value: string) => {
     setRecipientAddress(value);
@@ -56,7 +60,7 @@ export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
     setCheckingTrustline(true);
     try {
       const { data, error } = await supabase.functions.invoke('stellar-usdc-transfer', {
-        body: { action: 'check_trustline', omsUserId: user?.id ? String(user.id) : undefined },
+        body: { action: 'check_trustline', network, omsUserId: user?.id ? String(user.id) : undefined },
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (error) throw error;
@@ -73,12 +77,13 @@ export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('stellar-usdc-transfer', {
-        body: { action: 'create_trustline', omsUserId: user?.id ? String(user.id) : undefined },
+        body: { action: 'create_trustline', network, omsUserId: user?.id ? String(user.id) : undefined },
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (error) throw error;
       if (data.success) {
         toast({ title: "USDC Enabled!", description: "You can now send and receive USDC." });
+        triggerConfetti('buy');
         setHasTrustline(true);
         setLastTxHash(data.transactionHash);
       }
@@ -105,12 +110,13 @@ export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('stellar-usdc-transfer', {
-        body: { action: 'send_usdc', recipientAddress: recipientAddress.trim(), amount: numAmount, omsUserId: user?.id ? String(user.id) : undefined },
+        body: { action: 'send_usdc', recipientAddress: recipientAddress.trim(), amount: numAmount, network, omsUserId: user?.id ? String(user.id) : undefined },
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (error) throw error;
       if (data.success) {
         toast({ title: "Sent!", description: `${amount} USDC sent to ${recipientAddress.substring(0, 8)}...` });
+        triggerConfetti('sell');
         setLastTxHash(data.transactionHash);
         setRecipientAddress("");
         setAmount("");
@@ -228,7 +234,7 @@ export const USDCTransfer = ({ publicKey }: USDCTransferProps) => {
               <CheckCircle2 className="w-4 h-4 text-green-500" />
               <span className="text-sm">Transaction confirmed</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => window.open(`https://stellar.expert/explorer/testnet/tx/${lastTxHash}`, '_blank')}>
+            <Button variant="ghost" size="sm" onClick={() => window.open(`https://stellar.expert/explorer/${network === "mainnet" ? "public" : "testnet"}/tx/${lastTxHash}`, '_blank')}>
               <ExternalLink className="w-3.5 h-3.5 mr-1" />View
             </Button>
           </div>

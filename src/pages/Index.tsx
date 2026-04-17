@@ -4,13 +4,16 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import MoneyFlowGlobe from "@/components/MoneyFlowGlobe";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Shield, TrendingUp, Wallet, BarChart3, Zap } from "lucide-react";
+import { ArrowRight, Shield, TrendingUp, Wallet, BarChart3, Zap, Send, MessageCircle, Bot, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import AICoachWidget from "@/components/AICoachWidget";
 import NewsTicker from "@/components/NewsTicker";
 import FxRateCalculator from "@/components/FxRateCalculator";
+import WaitlistSignup from "@/components/WaitlistSignup";
+import { useI18n } from "@/lib/i18n";
 
 const Index = () => {
+  const { t } = useI18n();
   const features = [
     {
       icon: TrendingUp,
@@ -61,33 +64,84 @@ const Index = () => {
         <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
           <div className="max-w-2xl">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-1000">
-              InveStar: Build Wealth From Every Cross-Border Payment
+              {t("hero.title")}
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-150">
-              Global Payments to Smart Investing.
+              {t("hero.subtitle")}
             </p>
             <div className="flex gap-4 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
               <Button size="lg" asChild className="gap-2 text-lg px-8 bg-gradient-to-r from-primary/80 to-primary hover:opacity-90 shadow-[0_0_20px_hsl(200_100%_50%/0.4)] hover:shadow-[0_0_30px_hsl(200_100%_50%/0.6)]">
                 <Link to="/send-money">
-                  Send Money <Wallet className="w-5 h-5" />
+                  {t("hero.send_money")} <Wallet className="w-5 h-5" />
                 </Link>
               </Button>
               <Button size="lg" asChild className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-lg px-8">
                 <Link to="/investor-quiz">
-                  Start Investing <ArrowRight className="w-5 h-5" />
+                  {t("hero.start_investing")} <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="gap-2 text-lg px-8 border-primary/50 hover:bg-primary/10">
                 <Link to="/demo">
-                  Try Demo <Zap className="w-5 h-5" />
+                  {t("hero.try_demo")} <Zap className="w-5 h-5" />
                 </Link>
               </Button>
+              <a href="https://t.me/investaraibot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-lg border border-[hsl(200,50%,40%)] bg-[hsl(200,60%,15%)] hover:bg-[hsl(200,60%,25%)] transition-all px-3 py-2 hover:scale-105" title="Chat on Telegram">
+                <Send className="w-6 h-6 text-[hsl(200,80%,60%)]" />
+              </a>
+              <a href="https://api.whatsapp.com/send?phone=447786211734&text=Hi%20InveStar%2C%20I%27d%20like%20to%20get%20started" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-lg border border-[hsl(140,40%,40%)] bg-[hsl(140,40%,15%)] hover:bg-[hsl(140,40%,25%)] transition-all px-3 py-2 hover:scale-105" title="Chat on WhatsApp">
+                <MessageCircle className="w-6 h-6 text-[hsl(140,60%,50%)]" />
+              </a>
+            </div>
+            <div className="mt-8 animate-in fade-in slide-in-from-bottom-7 duration-1000 delay-500">
+              <p className="text-sm text-muted-foreground mb-3">{t("hero.waitlist_cta")}</p>
+              <WaitlistSignup />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Tabs - Investments & Payments */}
+      {/* InveStar Agent Banner */}
+      <section className="py-6 bg-background">
+        <div className="container mx-auto px-4">
+          <Link to="/clawbot" className="block group">
+            <Card className="relative overflow-hidden border-primary/40 hover:border-primary/70 transition-all duration-500 shadow-[0_0_20px_hsl(200_100%_50%/0.15),0_0_40px_hsl(142_76%_45%/0.08)] hover:shadow-[0_0_30px_hsl(200_100%_50%/0.25),0_0_60px_hsl(142_76%_45%/0.15)]">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/8 to-primary/10 group-hover:from-primary/15 group-hover:via-accent/12 group-hover:to-primary/15 transition-all duration-500" />
+              <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/15 via-accent/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-accent/10 to-transparent rounded-full translate-y-1/2 -translate-x-1/4" />
+              <CardContent className="relative p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-[0_0_20px_hsl(200_100%_50%/0.4)] group-hover:shadow-[0_0_30px_hsl(200_100%_50%/0.6)] group-hover:scale-110 transition-all duration-300">
+                    <Bot className="w-8 h-8 text-primary-foreground" />
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground">InveStar Agent</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-xs font-semibold flex items-center gap-1 animate-pulse">
+                      <Sparkles className="w-3 h-3" /> AI Copilot
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground text-sm md:text-base mb-3">
+                    Your autonomous investment copilot — say "Buy 100 AAPL shares" or "Send $200 to Ahmed via bKash" and it executes instantly.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Trade Execution", "Send Money", "Live Web Search", "Portfolio Analysis", "Recurring DCA"].map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-xs border border-primary/20">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-[0_0_15px_hsl(200_100%_50%/0.3)] group-hover:shadow-[0_0_25px_hsl(200_100%_50%/0.5)]">
+                    Launch Agent <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -98,7 +152,7 @@ const Index = () => {
                   <div className="web3-icon p-3 rounded-full bg-accent/20 group-hover:bg-accent/30 transition-colors duration-300">
                     <Wallet className="w-6 h-6 text-accent group-hover:drop-shadow-[0_0_8px_hsl(142_76%_45%)] transition-all duration-300" />
                   </div>
-                  <span className="group-hover:text-accent transition-colors duration-300">Remit</span>
+                  <span className="group-hover:text-accent transition-colors duration-300">{t("home.remit")}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -131,7 +185,7 @@ const Index = () => {
                   <div className="web3-icon p-3 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors duration-300">
                     <TrendingUp className="w-6 h-6 text-primary group-hover:drop-shadow-[0_0_8px_hsl(200_100%_50%)] transition-all duration-300" />
                   </div>
-                  <span className="group-hover:text-primary transition-colors duration-300">Investments</span>
+                  <span className="group-hover:text-primary transition-colors duration-300">{t("home.investments")}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -159,7 +213,13 @@ const Index = () => {
                     Markets
                   </Button>
                 </Link>
-                <Link to="/ai-coach">
+                <Link to="/clawbot">
+                  <Button className="web3-btn w-full justify-start gap-3 h-12 bg-gradient-to-r from-primary to-accent hover:opacity-90">
+                    <Bot className="w-5 h-5" />
+                    InveStar Agent
+                  </Button>
+                </Link>
+                <Link to="/investar-ai">
                   <Button variant="outline" className="web3-btn w-full justify-start gap-3 h-12 border-primary/20 hover:border-primary/50 hover:bg-primary/10">
                     <Zap className="w-5 h-5" />
                     AI Coach
@@ -175,7 +235,7 @@ const Index = () => {
       <section className="py-8 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-semibold text-foreground">Latest News</h2>
+            <h2 className="text-2xl font-semibold text-foreground">{t("home.latest_news")}</h2>
           </div>
           <NewsTicker />
         </div>
@@ -195,10 +255,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need to Succeed
+              {t("home.features_title")}
             </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Powerful AI-driven features designed for modern investors
+                {t("home.features_subtitle")}
               </p>
           </div>
 
@@ -229,14 +289,14 @@ const Index = () => {
           <Card className="bg-gradient-to-r from-primary to-accent text-white">
             <CardContent className="p-12 text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Start Investing?
+                {t("home.cta_title")}
               </h2>
               <p className="text-lg mb-8 opacity-90">
-                Join thousands of investors already using InveStar
+                {t("home.cta_subtitle")}
               </p>
               <Button size="lg" variant="secondary" asChild className="gap-2 text-lg px-8">
                 <Link to="/investor-quiz">
-                  Get Started Now <ArrowRight className="w-5 h-5" />
+                  {t("home.get_started")} <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
             </CardContent>

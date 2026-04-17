@@ -180,7 +180,7 @@ REAL PORTFOLIO DATA:
   };
 
   const streamChat = async (userMessage: Message): Promise<string> => {
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
+    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/investar-ai-chat`;
     let assistantContent = "";
     
     // Build context with portfolio data

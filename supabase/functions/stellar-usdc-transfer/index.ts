@@ -231,7 +231,8 @@ serve(async (req) => {
     if (!authHeader) throw new Error("Missing Authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { action, recipientAddress, amount, omsUserId: bodyOmsUserId } = await req.json();
+    const body = await req.json();
+    const { action, recipientAddress, amount, omsUserId: bodyOmsUserId, network: networkParam } = body;
     console.log(`USDC Transfer action: ${action}`);
 
     const { wallet, userId } = await resolveWallet(supabaseClient, token, bodyOmsUserId);
@@ -246,8 +247,14 @@ serve(async (req) => {
 
     const secretKey = await decryptSecret(wallet.stellar_secret_key_encrypted);
 
-    const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0");
-    const server = new StellarSdk.default.Horizon.Server("https://horizon-testnet.stellar.org");
+    const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle");
+    
+    const isMainnet = networkParam === "mainnet";
+    const horizonUrl = isMainnet ? "https://horizon.stellar.org" : "https://horizon-testnet.stellar.org";
+    const networkPassphrase = isMainnet ? StellarSdk.default.Networks.PUBLIC : StellarSdk.default.Networks.TESTNET;
+    const usdcIssuer = isMainnet ? "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN" : USDC_ISSUER;
+    const explorerNetwork = isMainnet ? "public" : "testnet";
+    const server = new StellarSdk.default.Horizon.Server(horizonUrl);
 
     let keypair;
     try {
@@ -268,13 +275,13 @@ serve(async (req) => {
       try {
         const account = await server.loadAccount(publicKey);
         const hasTrustline = account.balances.some(
-          (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === USDC_ISSUER,
+          (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === usdcIssuer,
         );
-        const usdcBalance = account.balances.find(
-          (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === USDC_ISSUER,
+        const usdcBal = account.balances.find(
+          (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === usdcIssuer,
         );
         return new Response(
-          JSON.stringify({ hasTrustline, usdcBalance: usdcBalance?.balance || "0", publicKey }),
+          JSON.stringify({ hasTrustline, usdcBalance: usdcBal?.balance || "0", publicKey }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
         );
       } catch (error) {
@@ -289,10 +296,10 @@ serve(async (req) => {
     if (action === "create_trustline") {
       console.log("Creating USDC trustline for:", publicKey);
       const account = await loadAccountWithAutoFund(server, publicKey);
-      const usdcAsset = new StellarSdk.default.Asset(USDC_ASSET_CODE, USDC_ISSUER);
+      const usdcAsset = new StellarSdk.default.Asset(USDC_ASSET_CODE, usdcIssuer);
       const transaction = new StellarSdk.default.TransactionBuilder(account, {
         fee: StellarSdk.default.BASE_FEE,
-        networkPassphrase: StellarSdk.default.Networks.TESTNET,
+        networkPassphrase,
       })
         .addOperation(StellarSdk.default.Operation.changeTrust({ asset: usdcAsset, limit: "1000000" }))
         .setTimeout(30)
@@ -320,15 +327,15 @@ serve(async (req) => {
       console.log(`Sending ${numAmount} USDC to ${trimmedAddress.substring(0, 8)}...`);
       const account = await loadAccountWithAutoFund(server, publicKey);
 
-      const usdcBalance = account.balances.find(
-        (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === USDC_ISSUER,
+      const usdcBal2 = account.balances.find(
+        (b: any) => b.asset_code === USDC_ASSET_CODE && b.asset_issuer === usdcIssuer,
       );
-      if (!usdcBalance || parseFloat(usdcBalance.balance) < numAmount) throw new Error("Insufficient USDC balance");
+      if (!usdcBal2 || parseFloat(usdcBal2.balance) < numAmount) throw new Error("Insufficient USDC balance");
 
-      const usdcAsset = new StellarSdk.default.Asset(USDC_ASSET_CODE, USDC_ISSUER);
+      const usdcAsset = new StellarSdk.default.Asset(USDC_ASSET_CODE, usdcIssuer);
       const transaction = new StellarSdk.default.TransactionBuilder(account, {
         fee: StellarSdk.default.BASE_FEE,
-        networkPassphrase: StellarSdk.default.Networks.TESTNET,
+        networkPassphrase,
       })
         .addOperation(StellarSdk.default.Operation.payment({ destination: trimmedAddress, asset: usdcAsset, amount: numAmount.toString() }))
         .setTimeout(30)
@@ -353,7 +360,7 @@ serve(async (req) => {
           success: true,
           message: `Successfully sent ${numAmount} USDC`,
           transactionHash: result.hash,
-          stellarExplorerUrl: `https://stellar.expert/explorer/testnet/tx/${result.hash}`,
+          stellarExplorerUrl: `https://stellar.expert/explorer/${explorerNetwork}/tx/${result.hash}`,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );

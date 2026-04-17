@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Bot, User, Volume2, StopCircle } from "lucide-react";
+import { Send, Bot, User, Volume2, StopCircle, Compass, TrendingUp, Shield, Wallet, BarChart3, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
 import MarketDataPanel from "@/components/MarketDataPanel";
@@ -13,6 +14,15 @@ import { useElevenLabsTTS } from "@/hooks/useElevenLabsTTS";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import VoiceWaveform from "@/components/VoiceWaveform";
 import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from "react-markdown";
+
+const QUICK_ACTIONS = [
+  { icon: TrendingUp, label: "Trade Ideas", prompt: "What are your top 3 trade ideas for today based on current market conditions?" },
+  { icon: Shield, label: "BD Rules", prompt: "What can I invest in as a Bangladeshi resident? Check my eligibility." },
+  { icon: Wallet, label: "My Portfolio", prompt: "Review my current portfolio and suggest improvements based on my holdings." },
+  { icon: BarChart3, label: "DSE Analysis", prompt: "Analyze the current DSE market. Which Bangladesh stocks look promising?" },
+  { icon: Globe, label: "NRB Investing", prompt: "I'm an NRB. What are my best options for investing from abroad in Bangladesh?" },
+];
 
 type Message = {
   role: "user" | "assistant";
@@ -23,7 +33,7 @@ const AICoach = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your InveStar AI Coach. I can help you with investment strategies, portfolio management, market analysis, and financial planning. What would you like to know?",
+      content: "👋 Welcome to **InveStar Copilot**! I'm your AI investment advisor.\n\nI can:\n- 📊 Suggest specific trades with entry/target/stop prices\n- 🇧🇩 Check Bangladesh regulatory eligibility for any investment\n- 💼 Analyze your portfolio and recommend improvements\n- 📈 Provide real-time market data and analysis\n\nWhat would you like to explore?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -62,7 +72,7 @@ const AICoach = () => {
     isSpeaking: isElevenLabsSpeaking,
     isLoading: isTTSLoading,
   } = useElevenLabsTTS({
-    voiceId: 'FGY2WhTYpPnrIDTdsKH5', // Laura - natural female voice
+    voiceId: 'EXAVITQu4vr4xnSDxMaL', // Sarah - warm conversational voice
   });
 
   const isSpeaking = isVoiceSpeaking || isElevenLabsSpeaking;
@@ -244,16 +254,43 @@ const AICoach = () => {
       <Navigation />
       <main className="container mx-auto px-4 pt-24 pb-8">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold mb-2">AI Investment Coach</h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Compass className="w-7 h-7 text-primary" />
+            <h1 className="text-3xl font-bold">InveStar Copilot</h1>
+            <Badge variant="secondary" className="text-xs">Advisor Mode</Badge>
+          </div>
           <p className="text-muted-foreground">
-            Get personalized investment guidance with real-time market data
+            AI-powered trade suggestions • BD compliance checks • Portfolio analysis
           </p>
           {isElevenLabsSpeaking && (
             <div className="mt-3 flex items-center justify-center gap-2">
               <VoiceWaveform isActive={isElevenLabsSpeaking} barCount={7} className="h-6" />
-              <span className="text-sm text-primary animate-pulse">AI is speaking...</span>
+              <span className="text-sm text-primary animate-pulse">Copilot is speaking...</span>
             </div>
           )}
+        </div>
+
+        {/* Quick Action Chips */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {QUICK_ACTIONS.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                key={action.label}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+                onClick={() => {
+                  setInput(action.prompt);
+                  setTimeout(() => document.getElementById("send-message-btn")?.click(), 100);
+                }}
+                disabled={isLoading}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {action.label}
+              </Button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -281,7 +318,13 @@ const AICoach = () => {
                           : "bg-muted"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.role === "assistant" ? (
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      )}
                     </div>
                     {message.role === "user" && (
                       <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">

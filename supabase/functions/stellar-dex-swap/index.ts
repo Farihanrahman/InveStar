@@ -134,7 +134,7 @@ serve(async (req) => {
     // For quote action, no wallet needed
     if (action === "quote") {
       const { sourceAsset, destAsset } = body;
-      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0");
+      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle");
       const server = new StellarSdk.default.Horizon.Server(config.horizonUrl);
 
       const usdcAsset = new StellarSdk.default.Asset(config.code, config.issuer);
@@ -191,7 +191,7 @@ serve(async (req) => {
       }
 
       const secretKey = await decryptSecret(wallet.stellar_secret_key_encrypted);
-      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0");
+      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle");
       const server = new StellarSdk.default.Horizon.Server(config.horizonUrl);
       const keypair = StellarSdk.default.Keypair.fromSecret(secretKey);
 
@@ -319,7 +319,7 @@ serve(async (req) => {
       const { wallet } = await resolveWallet(supabaseClient, token, omsUserId);
       if (!wallet?.stellar_public_key) throw new Error("Wallet not found.");
 
-      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0");
+      const StellarSdk = await import("https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle");
       const server = new StellarSdk.default.Horizon.Server(config.horizonUrl);
 
       try {

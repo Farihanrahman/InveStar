@@ -77,6 +77,144 @@ export type Database = {
         }
         Relationships: []
       }
+      clawbot_chat_history: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      clawbot_settings: {
+        Row: {
+          auto_invest_enabled: boolean
+          bond_target_pct: number
+          buy_on_dip: boolean
+          created_at: string
+          dca_amount_usd: number
+          dca_frequency: string
+          dividend_focus: boolean
+          esg_filter: boolean
+          id: string
+          investing_style: string
+          max_position_pct: number
+          notify_before_invest: boolean
+          rebalance_frequency: string
+          reit_target_pct: number
+          risk_level: string
+          sell_orders_allowed: boolean
+          stock_target_pct: number
+          time_horizon: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_invest_enabled?: boolean
+          bond_target_pct?: number
+          buy_on_dip?: boolean
+          created_at?: string
+          dca_amount_usd?: number
+          dca_frequency?: string
+          dividend_focus?: boolean
+          esg_filter?: boolean
+          id?: string
+          investing_style?: string
+          max_position_pct?: number
+          notify_before_invest?: boolean
+          rebalance_frequency?: string
+          reit_target_pct?: number
+          risk_level?: string
+          sell_orders_allowed?: boolean
+          stock_target_pct?: number
+          time_horizon?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_invest_enabled?: boolean
+          bond_target_pct?: number
+          buy_on_dip?: boolean
+          created_at?: string
+          dca_amount_usd?: number
+          dca_frequency?: string
+          dividend_focus?: boolean
+          esg_filter?: boolean
+          id?: string
+          investing_style?: string
+          max_position_pct?: number
+          notify_before_invest?: boolean
+          rebalance_frequency?: string
+          reit_target_pct?: number
+          risk_level?: string
+          sell_orders_allowed?: boolean
+          stock_target_pct?: number
+          time_horizon?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      clawbot_trade_log: {
+        Row: {
+          ai_rationale: string | null
+          alpaca_order_id: string | null
+          created_at: string
+          filled_avg_price: number | null
+          id: string
+          notional: number | null
+          order_type: string | null
+          qty: number | null
+          side: string
+          status: string | null
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          ai_rationale?: string | null
+          alpaca_order_id?: string | null
+          created_at?: string
+          filled_avg_price?: number | null
+          id?: string
+          notional?: number | null
+          order_type?: string | null
+          qty?: number | null
+          side?: string
+          status?: string | null
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          ai_rationale?: string | null
+          alpaca_order_id?: string | null
+          created_at?: string
+          filled_avg_price?: number | null
+          id?: string
+          notional?: number | null
+          order_type?: string | null
+          qty?: number | null
+          side?: string
+          status?: string | null
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_goals: {
         Row: {
           category: string
@@ -603,6 +741,66 @@ export type Database = {
           },
         ]
       }
+      telegram_bot_state: {
+        Row: {
+          id: number
+          update_offset: number
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      telegram_chat_prefs: {
+        Row: {
+          chat_id: number
+          lang: string
+          updated_at: string
+        }
+        Insert: {
+          chat_id: number
+          lang?: string
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: number
+          lang?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      telegram_messages: {
+        Row: {
+          chat_id: number
+          created_at: string
+          raw_update: Json
+          text: string | null
+          update_id: number
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          raw_update: Json
+          text?: string | null
+          update_id: number
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          raw_update?: Json
+          text?: string | null
+          update_id?: number
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -750,6 +948,33 @@ export type Database = {
           total?: number
           trade_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          source: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          status?: string
         }
         Relationships: []
       }

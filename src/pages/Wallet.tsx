@@ -6,14 +6,14 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ArrowDownRight, Plus, Loader2 } from "lucide-react";
 import { WalletBalance } from "@/components/WalletBalance";
-import { BackendStellarWallet } from "@/components/BackendStellarWallet";
 import { USDCTransfer } from "@/components/USDCTransfer";
 import { FiatRamp } from "@/components/FiatRamp";
-import { NetworkSwitcher, DexSwap, WalletConnectButton } from "@/components/stellar";
+import { NetworkSwitcher, DexSwap, WalletConnectButton, StellarAccountInfo, StellarTransactionHistory } from "@/components/stellar";
 import type { StellarNetwork } from "@/components/stellar";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useConfetti } from "@/hooks/useConfetti";
 
 interface ConnectedExternalWallet {
   name: string;
@@ -36,7 +36,6 @@ const Wallet = () => {
                    user?.user_name as string | undefined ||
                    user?.email?.split('@')[0] || 
                    'User';
-  const userEmail = user?.email || null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -178,14 +177,21 @@ const Wallet = () => {
               </Card>
             )}
 
-            <BackendStellarWallet 
-              publicKey={stellarPublicKey} 
-              onWalletRegenerated={(pk) => setStellarPublicKey(pk)}
+            {/* On-chain account info replaces old BackendStellarWallet */}
+            <StellarAccountInfo 
+              publicKey={activePublicKey} 
+              network={network}
             />
 
-            <USDCTransfer publicKey={activePublicKey} />
+            <USDCTransfer publicKey={activePublicKey} network={network} />
             <DexSwap publicKey={activePublicKey} network={network} />
             <FiatRamp publicKey={activePublicKey} />
+
+            {/* Real on-chain transaction history from Horizon */}
+            <StellarTransactionHistory 
+              publicKey={activePublicKey} 
+              network={network} 
+            />
           </>
         )}
 
@@ -211,7 +217,7 @@ const Wallet = () => {
           </div>
         </Card>
 
-        {/* Recent Transactions */}
+        {/* DB-stored transactions (payments, deposits) */}
         <RecentTransactionsCard token={token} userId={user?.id ? String(user.id) : undefined} />
       </div>
     </div>
@@ -221,6 +227,7 @@ const Wallet = () => {
 function CreateWalletButton({ token, omsUserId, onCreated }: { token: string | null; omsUserId: string; onCreated: (pk: string) => void }) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { triggerConfetti } = useConfetti();
 
   const handleCreate = async () => {
     setLoading(true);
@@ -239,6 +246,7 @@ function CreateWalletButton({ token, omsUserId, onCreated }: { token: string | n
             ? "Your Stellar wallet has been created and funded with testnet XLM!" 
             : "Your Stellar wallet has been created.",
         });
+        triggerConfetti('buy');
         onCreated(data.publicKey);
       }
     } catch (error: any) {
@@ -293,11 +301,11 @@ function RecentTransactionsCard({ token, userId }: { token: string | null; userI
 
   return (
     <Card className="p-6 mt-6">
-      <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+      <h2 className="text-xl font-semibold mb-4">Platform Transactions</h2>
       {loading ? (
         <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : transactions.length === 0 ? (
-        <p className="text-center text-muted-foreground py-6">No transactions yet. Add funds to get started!</p>
+        <p className="text-center text-muted-foreground py-6">No platform transactions yet.</p>
       ) : (
         <div className="space-y-3">
           {transactions.map((tx: any) => (
@@ -307,7 +315,7 @@ function RecentTransactionsCard({ token, userId }: { token: string | null; userI
                   {tx.type === 'deposit' ? <ArrowDownRight className="w-4 h-4 text-green-500" /> : <ArrowUpRight className="w-4 h-4 text-red-500" />}
                 </div>
                 <div>
-                  <p className="font-medium capitalize">{tx.type}</p>
+                  <p className="font-medium capitalize">{tx.type.replace(/_/g, ' ')}</p>
                   <p className="text-sm text-muted-foreground">{tx.payment_method?.toUpperCase() || 'Unknown'} • {formatDate(tx.created_at)}</p>
                 </div>
               </div>

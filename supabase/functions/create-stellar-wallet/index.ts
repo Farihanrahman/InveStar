@@ -155,7 +155,7 @@ serve(async (req) => {
 
     // Generate new Stellar keypair
     console.log(action === 'regenerate' ? 'Regenerating Stellar wallet...' : 'Creating new Stellar wallet...');
-    const StellarSdk = await import('https://esm.sh/@stellar/stellar-sdk@12.3.0');
+    const StellarSdk = await import('https://esm.sh/@stellar/stellar-sdk@12.3.0?bundle');
     const keypair = StellarSdk.default.Keypair.random();
     const publicKey = keypair.publicKey();
     const secretKey = keypair.secret();

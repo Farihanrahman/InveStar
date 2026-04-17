@@ -1,7 +1,6 @@
 // Hook for ElevenLabs text-to-speech with browser TTS fallback
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useOmsAuth } from '@/lib/auth/omsAuthContext';
 
 interface UseElevenLabsTTSOptions {
   voiceId?: string;
@@ -9,7 +8,7 @@ interface UseElevenLabsTTSOptions {
 }
 
 export const useElevenLabsTTS = (options: UseElevenLabsTTSOptions = {}) => {
-  const { isAuthenticated, token } = useOmsAuth();
+  
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -30,21 +29,23 @@ export const useElevenLabsTTS = (options: UseElevenLabsTTSOptions = {}) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;
     
-    // Try to use a female voice
+    // Try to find a natural-sounding voice
     const voices = window.speechSynthesis.getVoices();
-    const femaleVoice = voices.find(v => 
-      v.name.toLowerCase().includes('female') || 
+    const naturalVoice = voices.find(v => 
       v.name.toLowerCase().includes('samantha') ||
-      v.name.toLowerCase().includes('victoria') ||
-      v.name.toLowerCase().includes('karen')
-    ) || voices[0];
+      v.name.toLowerCase().includes('google us english') ||
+      v.name.toLowerCase().includes('google uk english female') ||
+      v.name.toLowerCase().includes('karen') ||
+      v.name.toLowerCase().includes('moira') ||
+      v.name.toLowerCase().includes('tessa')
+    ) || voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) || voices[0];
     
-    if (femaleVoice) {
-      utterance.voice = femaleVoice;
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
     }
     
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = 1.05;
+    utterance.pitch = 1.05;
 
     utterance.onstart = () => {
       setIsSpeaking(true);
@@ -85,12 +86,7 @@ export const useElevenLabsTTS = (options: UseElevenLabsTTSOptions = {}) => {
     setIsLoading(true);
 
     try {
-      // If the user isn't authenticated or no token, fall back to browser TTS.
-      if (!isAuthenticated || !token) {
-        if (requestId === speakRequestIdRef.current) setIsLoading(false);
-        speakWithBrowserTTS(text);
-        return;
-      }
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
@@ -98,8 +94,8 @@ export const useElevenLabsTTS = (options: UseElevenLabsTTSOptions = {}) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${token}`,
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
           },
           body: JSON.stringify({
             text: text.substring(0, 2500), // Limit text length

@@ -3,16 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-// import { usePushNotifications } from "@/hooks/usePushNotifications"
 import GlobalAIAgent from "@/components/GlobalAIAgent"
 import { OmsAuthProvider } from "@/lib/auth/omsAuthContext"
+import { I18nProvider } from "@/lib/i18n"
 import Index from "./pages/Index"
 import Dashboard from "./pages/Dashboard"
 import Portfolio from "./pages/Portfolio"
 import NetWorth from "./pages/NetWorth"
 import VirtualTrading from "./pages/VirtualTrading"
 import Auth from "./pages/Auth"
-import AICoach from "./pages/AICoach"
+import { Navigate } from "react-router-dom"
 import MoneyGramRamps from "./pages/MoneyGramRamps"
 import Wallet from "./pages/Wallet"
 import FundWallet from "./pages/FundWallet"
@@ -29,6 +29,9 @@ import SendMoney from "./pages/SendMoney"
 import InveStarAI from "./pages/InveStarAI"
 import InveStarRemit from "./pages/InveStarRemit"
 import Demo from "./pages/Demo"
+import Clawbot from "./pages/Clawbot"
+import Traction from "./pages/Traction"
+import WalletDemo from "./pages/WalletDemo"
 
 const queryClient = new QueryClient()
 
@@ -37,6 +40,7 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <I18nProvider>
       <OmsAuthProvider>
         <TooltipProvider>
           <Toaster />
@@ -52,7 +56,7 @@ const App = () => {
             <Route path="/virtual-trading" element={<VirtualTrading />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/fund-wallet" element={<FundWallet />} />
-            <Route path="/ai-coach" element={<AICoach />} />
+            <Route path="/ai-coach" element={<Navigate to="/investar-ai" replace />} />
             <Route path="/moneygram-ramps" element={<MoneyGramRamps />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<Terms />} />
@@ -65,6 +69,9 @@ const App = () => {
             <Route path="/investar-ai" element={<InveStarAI />} />
             <Route path="/remit" element={<InveStarRemit />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/clawbot" element={<Clawbot />} />
+            <Route path="/traction" element={<Traction />} />
+            <Route path="/wallet/demo" element={<WalletDemo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
@@ -72,6 +79,7 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </OmsAuthProvider>
+      </I18nProvider>
     </QueryClientProvider>
   )
 }

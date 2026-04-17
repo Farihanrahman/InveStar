@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import VirtualPortfolioChart from "@/components/VirtualPortfolioChart";
 import StockDetailView from "@/components/StockDetailView";
 import StockSearchBar from "@/components/StockSearchBar";
@@ -17,6 +18,7 @@ import VirtualHoldings from "@/components/VirtualHoldings";
 import Watchlist from "@/components/Watchlist";
 import PriceAlerts from "@/components/PriceAlerts";
 import PortfolioResetButton from "@/components/PortfolioResetButton";
+
 
 interface VirtualPortfolio {
   id: string;
@@ -61,6 +63,7 @@ interface StockPrice {
 
 const VirtualTrading = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useOmsAuth();
   const stockDetailRef = useRef<HTMLDivElement>(null);
   const [orderType, setOrderType] = useState("buy");
   const [quantity, setQuantity] = useState("");
@@ -72,6 +75,7 @@ const VirtualTrading = () => {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [realTimePrices, setRealTimePrices] = useState<Record<string, StockPrice>>({});
   const [watchlistKey, setWatchlistKey] = useState(0);
+  
 
   const availableStocks = useMemo(() => [
     // Major Tech Stocks
@@ -269,16 +273,21 @@ const VirtualTrading = () => {
   }, [calculateHoldings]);
 
   const checkAuthAndLoadData = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
+    if (!isAuthenticated) {
       toast.error("Please log in to access virtual trading");
       navigate("/auth");
       return;
     }
 
-    await loadPortfolioData(session.user.id);
-  }, [navigate, loadPortfolioData]);
+    const { data: { session } } = await supabase.auth.getSession();
+    const uid = session?.user?.id;
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
+
+    await loadPortfolioData(uid);
+  }, [navigate, loadPortfolioData, isAuthenticated]);
 
   const fetchRealTimePrices = useCallback(async () => {
     try {
@@ -701,6 +710,7 @@ const VirtualTrading = () => {
           </Card>
         </div>
       </main>
+      
     </div>
   );
 };

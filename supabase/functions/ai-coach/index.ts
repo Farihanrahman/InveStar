@@ -6,60 +6,64 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are an expert investment coach from InveStar (www.investarbd.com), powered by GPT-5.2 with access to real-time market data.
+const SYSTEM_PROMPT = `You are the InveStar Copilot — an AI-powered investment advisor at www.investarbd.com.
+You operate in ADVISOR MODE: you recommend, explain, and educate — you never auto-execute trades or transfers.
 
-CRITICAL: REAL-TIME MARKET DATA ACCESS
-You have powerful tools to fetch live market data. USE THEM PROACTIVELY when users ask about:
-- Cryptocurrency prices → get_crypto_prices
-- Forex/currency rates → get_forex_rates  
-- Stock prices (US stocks) → get_stock_prices
-- Dhaka Stock Exchange → get_dse_prices
-- Market news → get_market_news
-- Market trends/analysis → get_market_trends
+IDENTITY & TONE:
+- You are a trusted financial copilot for Bangladeshi diaspora investors (NRBs) and local users
+- Speak with authority but warmth. Be specific, not generic. Use real numbers.
+- Support bilingual interaction: English by default, switch to বাংলা if asked
+- Address users as "you" and be conversational
 
-ALWAYS USE TOOLS when discussing:
-- Current prices of any asset
-- Market conditions or trends
-- Price comparisons
-- Investment timing
-- Market news or updates
+CORE CAPABILITIES:
+1. TRADE SUGGESTIONS — Analyze markets and suggest specific buy/sell/hold actions
+   - Always include: entry price, target, stop-loss, reasoning, risk level (1-5)
+   - Format suggestions as clear action items the user can approve
+   - Never say "I executed" — say "I recommend" or "Consider"
 
-HOW TO RESPOND WITH DATA:
-1. Call the appropriate tool(s) to get live data
-2. Present prices clearly with symbols and % changes
-3. Add expert analysis and actionable insights
-4. Compare to historical context when relevant
-5. Give specific recommendations with price levels
+2. BD REGULATORY COMPLIANCE — Check what Bangladeshi investors can/cannot do
+   - Use check_bd_eligibility tool for any cross-border investment question
+   - Proactively flag restrictions before users hit walls
+   - Explain BFIU, Bangladesh Bank, BSEC rules in plain language
 
-EXPERT ANALYSIS CAPABILITIES:
-- Technical Analysis: Support/resistance levels, trend analysis, momentum indicators
-- Fundamental Analysis: Valuation metrics, earnings outlook, sector comparisons
-- Risk Assessment: Volatility analysis, correlation insights, portfolio impact
-- Timing Insights: Entry/exit recommendations, market sentiment
+3. PORTFOLIO ANALYSIS — Use get_user_portfolio tool to give personalized advice
+   - Reference actual holdings when giving recommendations
+   - Calculate concentration risk, sector exposure, diversification score
+   - Suggest rebalancing when appropriate
 
-FORMATTING RULES:
-- Write in clean paragraphs without markdown asterisks
-- Use numbered lists for clear recommendations
-- Always include currency symbols ($, ৳, etc.)
-- Format percentages with + or - prefix
-- Keep responses actionable and specific
+4. MARKET INTELLIGENCE — Use market data tools proactively
+   - get_crypto_prices, get_forex_rates, get_stock_prices, get_dse_prices
+   - get_market_news, get_market_trends
+   - Always cite data sources
 
-SOURCE CITATION (CRITICAL):
-When you use tool data, ALWAYS cite the data source at the end:
-- Crypto prices: "Source: CoinGecko (real-time)"
-- Forex rates: "Source: ExchangeRate-API (real-time)"  
-- US Stock prices: "Source: Yahoo Finance (real-time)"
-- DSE prices: "Source: DSE simulated data"
-- Market news: "Source: Curated financial news"
-- Market trends: "Source: Market analysis data"
-Always include a "Data Sources" section at the end of responses that use market data.
+ADVISOR BEHAVIOR RULES:
+- When user says "should I buy X?" → Fetch live price → Check BD eligibility → Give specific recommendation with entry/target/stop
+- When user asks about sending money abroad to invest → Check eligibility first → Explain limits → Suggest compliant alternatives
+- When user has idle cash → Suggest allocation based on their risk profile
+- Always end trade suggestions with: "Would you like me to set this up? [You'll confirm before any trade executes]"
 
-LANGUAGE SUPPORT:
-- Ask: "Would you like me to explain in Bangla (বাংলা)?"
-- If requested, provide full answer in Bengali
+BD INVESTMENT REGULATIONS (BUILT-IN KNOWLEDGE):
+- NRBs can invest in DSE through NITA (Non-Resident Investors Taka Account)
+- Foreign investment by residents requires Bangladesh Bank approval
+- Maximum outward remittance limits apply (currently $12,000/year for education, medical; investment abroad is restricted for residents)
+- BFIU monitors transactions above BDT 10 lakh
+- Crypto trading is NOT officially permitted by Bangladesh Bank (warn users)
+- DSE stocks are freely available to all Bangladeshi nationals
+- NRBs can repatriate dividends and capital gains from DSE investments
 
-BRANDING:
-End responses with: "For more insights, visit InveStar at www.investarbd.com!"`;
+FORMATTING:
+- Clean paragraphs, no markdown asterisks
+- Use numbered lists for recommendations
+- Include currency symbols ($, ৳)
+- Format trade suggestions as:
+  📊 TRADE IDEA: [Symbol]
+  Action: [Buy/Sell/Hold]
+  Entry: [Price] | Target: [Price] | Stop: [Price]
+  Risk: [1-5 stars] | Timeframe: [Short/Medium/Long]
+  Rationale: [1-2 sentences]
+
+SOURCE CITATION: Always cite data sources at the end.
+BRANDING: End with "— InveStar Copilot 🧭"`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -67,12 +71,12 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY") ?? Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!AI_GATEWAY_API_KEY) {
+      throw new Error("AI gateway API key is not configured");
     }
 
     // Authenticate user
@@ -105,107 +109,72 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "get_crypto_prices",
-          description: "Get real-time cryptocurrency prices including Bitcoin, Ethereum, Solana, Cardano, Ripple, Dogecoin, Stellar XLM with 24h changes, market cap, and volume",
-          parameters: {
-            type: "object",
-            properties: {
-              coins: {
-                type: "array",
-                items: { type: "string" },
-                description: "Optional specific coins to fetch. If empty, returns top cryptocurrencies."
-              }
-            },
-            required: []
-          }
+          description: "Get real-time cryptocurrency prices including Bitcoin, Ethereum, Solana, Stellar XLM with 24h changes, market cap, and volume",
+          parameters: { type: "object", properties: { coins: { type: "array", items: { type: "string" }, description: "Specific coins to fetch. If empty, returns top cryptocurrencies." } }, required: [] }
         }
       },
       {
         type: "function",
         function: {
           name: "get_forex_rates",
-          description: "Get current foreign exchange rates for major currency pairs including USD, EUR, GBP, JPY, CAD, AUD, CHF, CNY, BDT, INR",
-          parameters: {
-            type: "object",
-            properties: {
-              base_currency: {
-                type: "string",
-                description: "Base currency for rates. Defaults to USD."
-              }
-            },
-            required: []
-          }
+          description: "Get current foreign exchange rates for major currency pairs including USD, EUR, GBP, JPY, BDT, INR",
+          parameters: { type: "object", properties: { base_currency: { type: "string", description: "Base currency. Defaults to USD." } }, required: [] }
         }
       },
       {
         type: "function",
         function: {
           name: "get_stock_prices",
-          description: "Get real-time US stock prices for major companies like Apple, Google, Microsoft, Tesla, Amazon, Meta, Nvidia with price changes and key metrics",
-          parameters: {
-            type: "object",
-            properties: {
-              symbols: {
-                type: "array",
-                items: { type: "string" },
-                description: "Stock symbols to fetch (e.g., AAPL, GOOGL, MSFT). If empty, returns top stocks."
-              }
-            },
-            required: []
-          }
+          description: "Get real-time US stock prices for companies like Apple, Google, Microsoft, Tesla, NVIDIA",
+          parameters: { type: "object", properties: { symbols: { type: "array", items: { type: "string" }, description: "Stock symbols (e.g., AAPL, GOOGL). If empty, returns top stocks." } }, required: [] }
         }
       },
       {
         type: "function",
         function: {
           name: "get_dse_prices",
-          description: "Get Dhaka Stock Exchange (DSE) prices for Bangladesh stocks with current prices, changes, and trading volume",
-          parameters: {
-            type: "object",
-            properties: {
-              symbols: {
-                type: "array",
-                items: { type: "string" },
-                description: "DSE stock symbols to fetch. If empty, returns top DSE stocks."
-              }
-            },
-            required: []
-          }
+          description: "Get Dhaka Stock Exchange (DSE) prices for Bangladesh stocks",
+          parameters: { type: "object", properties: { symbols: { type: "array", items: { type: "string" }, description: "DSE stock symbols. If empty, returns top DSE stocks." } }, required: [] }
         }
       },
       {
         type: "function",
         function: {
           name: "get_market_news",
-          description: "Get latest financial market news covering stocks, crypto, forex, commodities and economic events",
-          parameters: {
-            type: "object",
-            properties: {
-              category: {
-                type: "string",
-                enum: ["all", "stocks", "crypto", "forex", "commodities", "economy"],
-                description: "News category filter. Defaults to 'all'."
-              }
-            },
-            required: []
-          }
+          description: "Get latest financial market news",
+          parameters: { type: "object", properties: { category: { type: "string", enum: ["all", "stocks", "crypto", "forex", "commodities", "economy"], description: "News category. Defaults to 'all'." } }, required: [] }
         }
       },
       {
         type: "function",
         function: {
           name: "get_market_trends",
-          description: "Get comprehensive market trend analysis including sector performance, market sentiment, momentum indicators, and key support/resistance levels",
+          description: "Get market trend analysis including sentiment, sector performance, key levels",
+          parameters: { type: "object", properties: { market: { type: "string", enum: ["us_stocks", "crypto", "forex", "dse", "global"], description: "Market to analyze. Defaults to 'global'." } }, required: [] }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "check_bd_eligibility",
+          description: "Check Bangladesh regulatory eligibility for a specific investment action. Returns whether a BD resident or NRB can legally perform the action, applicable limits, and required approvals.",
           parameters: {
             type: "object",
             properties: {
-              market: {
-                type: "string",
-                enum: ["us_stocks", "crypto", "forex", "dse", "global"],
-                description: "Market to analyze. Defaults to 'global'."
-              }
+              action: { type: "string", description: "The investment action (e.g., 'buy US stocks', 'invest in crypto', 'send money abroad for investment', 'open NITA account', 'buy DSE stocks')" },
+              user_type: { type: "string", enum: ["resident", "nrb"], description: "Whether the user is a Bangladesh resident or Non-Resident Bangladeshi (NRB)" },
+              amount_usd: { type: "number", description: "Optional: amount in USD to check against limits" }
             },
-            required: []
+            required: ["action"]
           }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "get_user_portfolio",
+          description: "Get the current user's portfolio holdings, wallet balance, and investment profile to provide personalized advice",
+          parameters: { type: "object", properties: {}, required: [] }
         }
       }
     ];
@@ -218,7 +187,7 @@ serve(async (req) => {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -326,28 +295,34 @@ serve(async (req) => {
 
                     let result;
 
-                    switch (functionName) {
-                      case "get_crypto_prices":
-                        result = await fetchCryptoPrices(args);
-                        break;
-                      case "get_forex_rates":
-                        result = await fetchForexRates(args);
-                        break;
-                      case "get_stock_prices":
-                        result = await fetchStockPrices(args);
-                        break;
-                      case "get_dse_prices":
-                        result = await fetchDSEPrices(args);
-                        break;
-                      case "get_market_news":
-                        result = await fetchMarketNews(args);
-                        break;
-                      case "get_market_trends":
-                        result = await fetchMarketTrends(args);
-                        break;
-                      default:
-                        result = { error: "Unknown function" };
-                    }
+                      switch (functionName) {
+                        case "get_crypto_prices":
+                          result = await fetchCryptoPrices(args);
+                          break;
+                        case "get_forex_rates":
+                          result = await fetchForexRates(args);
+                          break;
+                        case "get_stock_prices":
+                          result = await fetchStockPrices(args);
+                          break;
+                        case "get_dse_prices":
+                          result = await fetchDSEPrices(args);
+                          break;
+                        case "get_market_news":
+                          result = await fetchMarketNews(args);
+                          break;
+                        case "get_market_trends":
+                          result = await fetchMarketTrends(args);
+                          break;
+                        case "check_bd_eligibility":
+                          result = checkBDEligibility(args);
+                          break;
+                        case "get_user_portfolio":
+                          result = await fetchUserPortfolio(user.id, supabase);
+                          break;
+                        default:
+                          result = { error: "Unknown function" };
+                      }
 
                     toolResults.push({
                       tool_call_id: toolCall.id,
@@ -368,7 +343,7 @@ serve(async (req) => {
                   const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                      Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
                       "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
@@ -657,6 +632,109 @@ async function fetchMarketTrends(args: any) {
   };
 
   return trends[market as keyof typeof trends] || trends.global;
+}
+
+// Bangladesh regulatory eligibility checker
+function checkBDEligibility(args: any) {
+  const action = (args.action || "").toLowerCase();
+  const userType = args.user_type || "resident";
+  const amount = args.amount_usd || 0;
+
+  const rules: Record<string, any> = {
+    "buy us stocks": {
+      resident: { allowed: false, reason: "Bangladesh Bank does not permit residents to directly invest in foreign stock markets. Alternative: Invest via DSE-listed multinational stocks or mutual funds with global exposure.", required_approvals: ["Bangladesh Bank permission (rarely granted for individuals)"], limit: "N/A" },
+      nrb: { allowed: true, reason: "As an NRB, you can invest in US stocks using your foreign income. No Bangladesh Bank approval needed for funds earned abroad.", required_approvals: ["Valid passport", "NRB documentation"], limit: "No specific limit on foreign-earned income" }
+    },
+    "invest in crypto": {
+      resident: { allowed: false, reason: "Bangladesh Bank has NOT approved cryptocurrency trading. Engaging in crypto trading from Bangladesh carries legal risk. BFIU actively monitors crypto-related transactions.", required_approvals: [], limit: "N/A", warning: "⚠️ HIGH RISK: Crypto is not recognized as legal tender in Bangladesh." },
+      nrb: { allowed: "grey_area", reason: "While BD regulations don't apply to your foreign residence, repatriating crypto gains to Bangladesh may trigger BFIU scrutiny. Proceed with caution.", required_approvals: ["Tax compliance in country of residence"], limit: "N/A" }
+    },
+    "buy dse stocks": {
+      resident: { allowed: true, reason: "Fully permitted. Open a BO (Beneficiary Owner) account with any BSEC-registered broker.", required_approvals: ["National ID/Passport", "BO Account", "Bank Account"], limit: "No limit" },
+      nrb: { allowed: true, reason: "NRBs can invest in DSE through a NITA (Non-Resident Investors Taka Account). Dividends and capital gains are fully repatriable.", required_approvals: ["NITA account", "NRB documentation", "Authorized dealer bank"], limit: "No limit on investment amount" }
+    },
+    "send money abroad for investment": {
+      resident: { allowed: false, reason: "Outward remittance for investment purposes is restricted for BD residents. Allowed categories: education ($12,000/year), medical, travel.", required_approvals: ["Bangladesh Bank approval"], limit: "$12,000/year (education/medical only)" },
+      nrb: { allowed: true, reason: "NRBs can freely transfer funds from their foreign accounts. Inward remittance to Bangladesh is encouraged.", required_approvals: [], limit: "No limit" }
+    },
+    "open nita account": {
+      resident: { allowed: false, reason: "NITA accounts are exclusively for Non-Resident Bangladeshis.", required_approvals: [], limit: "N/A" },
+      nrb: { allowed: true, reason: "Open a NITA account through an Authorized Dealer bank in Bangladesh. Required for DSE investment as an NRB.", required_approvals: ["Passport copy", "NRB proof (work permit/residency)", "Authorized Dealer bank relationship"], limit: "No limit" }
+    }
+  };
+
+  // Find best matching rule
+  let bestMatch = null;
+  for (const [key, rule] of Object.entries(rules)) {
+    if (action.includes(key) || key.includes(action)) {
+      bestMatch = rule[userType] || rule["resident"];
+      break;
+    }
+  }
+
+  if (!bestMatch) {
+    return {
+      action,
+      user_type: userType,
+      status: "unknown",
+      recommendation: "This specific action isn't in my regulatory database. I recommend consulting with a BSEC-registered financial advisor or your bank's authorized dealer for guidance.",
+      general_note: "Bangladesh Bank and BSEC regulate all cross-border financial activities. When in doubt, check with your bank first."
+    };
+  }
+
+  return {
+    action,
+    user_type: userType,
+    amount_checked: amount > 0 ? `$${amount}` : "N/A",
+    ...bestMatch,
+    disclaimer: "This is informational guidance, not legal advice. Regulations may change. Verify with Bangladesh Bank or BSEC for current rules."
+  };
+}
+
+// Fetch user's actual portfolio from database
+async function fetchUserPortfolio(userId: string, supabaseClient: any) {
+  try {
+    const [holdingsRes, walletRes, profileRes] = await Promise.all([
+      supabaseClient.from('portfolio_holdings').select('*').eq('user_id', userId),
+      supabaseClient.from('wallet_balances').select('balance_usd, balance_usdc, stellar_public_key').eq('user_id', userId).single(),
+      supabaseClient.from('investor_profiles').select('investor_type, title, description').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single()
+    ]);
+
+    const holdings = holdingsRes.data || [];
+    const wallet = walletRes.data || { balance_usd: 0, balance_usdc: 0 };
+    const profile = profileRes.data || null;
+
+    const totalInvested = holdings.reduce((sum: number, h: any) => sum + (h.shares * h.avg_cost), 0);
+
+    return {
+      holdings: holdings.map((h: any) => ({
+        symbol: h.symbol,
+        name: h.name,
+        shares: h.shares,
+        avg_cost: h.avg_cost,
+        total_invested: (h.shares * h.avg_cost).toFixed(2)
+      })),
+      wallet: {
+        usd_balance: wallet.balance_usd,
+        usdc_balance: wallet.balance_usdc,
+        has_stellar_wallet: !!wallet.stellar_public_key
+      },
+      investor_profile: profile ? {
+        type: profile.investor_type,
+        title: profile.title,
+        description: profile.description
+      } : null,
+      summary: {
+        total_holdings: holdings.length,
+        total_invested: totalInvested.toFixed(2),
+        idle_cash: wallet.balance_usd,
+        portfolio_diversity: holdings.length >= 5 ? "Good" : holdings.length >= 3 ? "Moderate" : "Low"
+      }
+    };
+  } catch (error) {
+    console.error("Portfolio fetch error:", error);
+    return { error: "Could not retrieve portfolio data", holdings: [], wallet: { usd_balance: 0, usdc_balance: 0 } };
+  }
 }
 
 function formatNumber(num: number): string {
