@@ -1,6 +1,6 @@
 # InveStar Remittance Platform
 
-A TypeScript React application for portfolio tracking, OMS-backed trading workflows, wallet funding, and cross-border remittance experiences, with Supabase-powered backend functions and mobile packaging through Capacitor.
+A TypeScript React application for portfolio tracking, OMS-backed trading workflows, wallet funding, and cross-border remittance experiences, with Supabase-powered backend functions and mobile packaging through Capacitor.Core backend services (stellar-ramp-service, treasury-conversion-service, moneygram-transfer-service) are in private repos — available for SCF panel review on request.
 
 ## Table of Contents
 
