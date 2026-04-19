@@ -222,21 +222,21 @@ Schema changes are tracked in `supabase/migrations/`.
 
 ## Stellar and MoneyGram Integration
 
-This codebase includes blockchain and cash-ramp integration paths for cross-border remittance use cases.
+This codebase includes **on-chain Stellar operations** (wallet lifecycle, USDC, DEX) plus **fiat ramp product flows** that are still maturing toward live SEP-24 anchor integration.
 
 ### Integration Flows
 
-- `USDC transfer on Stellar`: wallet trustline setup and token transfer via `stellar-usdc-transfer`.
-- `XLM/USDC DEX swap`: quote and execute swap via `stellar-dex-swap`.
-- `Fiat on/off-ramp simulation`: deposit/withdraw flow via `stellar-anchor-ramp`.
-- `MoneyGram ramps UI`: application and onboarding screen at `/moneygram-ramps`.
+- `USDC on Stellar`: trustline checks, creation, and signed USDC payments via Horizon using `stellar-usdc-transfer` (real transactions; network is configurable).
+- `XLM/USDC DEX`: path finding, quotes, and signed path payments via `stellar-dex-swap` (real on-chain swaps on the selected network).
+- `Fiat on/off-ramp (SEP-24-shaped)`: deposit and withdrawal orchestration via `stellar-anchor-ramp`—auth, wallet linkage, fees, transaction records, and interactive URL handoff. Anchor endpoints and interactive URLs are **development stand-ins**, not production MoneyGram or Circle SEP-24 yet.
+- `MoneyGram ramps UI`: application and onboarding at `/moneygram-ramps` (product surface; distinct from certified production ramp integration).
 
 ### Edge Function Map
 
-- `create-stellar-wallet`: creates and stores encrypted Stellar wallet credentials.
-- `stellar-usdc-transfer`: checks trustline and sends USDC on Stellar testnet.
-- `stellar-dex-swap`: handles XLM/USDC swap logic.
-- `stellar-anchor-ramp`: anchor-based ramp flow with `moneygram` and `circle` options (currently simulated/testnet-oriented).
+- `create-stellar-wallet`: creates Stellar keys and stores **AES-GCM–encrypted** secrets server-side.
+- `stellar-usdc-transfer`: trustline and USDC payments via Stellar SDK; **defaults to testnet** (Friendbot can fund new testnet accounts); **mainnet is supported** when the client passes the mainnet network option—use explicit environment and rollout controls before production traffic.
+- `stellar-dex-swap`: **live** XLM/USDC quotes and swaps on Horizon for **testnet or mainnet** (path payments, liquidity-dependent).
+- `stellar-anchor-ramp`: ramp **workflow** with `moneygram` and `circle` options; uses **stub anchor metadata** and non-production interactive URLs until Phase 1 Track 1 (SEP-24 MVP) connects real anchor endpoints.
 - `test-stellar`: utility endpoint for Stellar test operations.
 
 ### Frontend Integration Points
@@ -262,11 +262,11 @@ Supabase Function secrets (set in Supabase project secrets, not in frontend `.en
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_ANON_KEY` (used by selected functions)
 
-### Network and Mode Notes
+### What's shipped vs planned (tranches)
 
-- Current Stellar flows are primarily testnet-oriented (`horizon-testnet`, Friendbot funding paths).
-- MoneyGram-related anchor logic in current function code is simulation-oriented for development/testing.
-- If enabling production money movement, explicitly separate testnet/mainnet settings and rollout controls.
+- **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfers; **real** DEX swaps; ramp API and UI that exercise end-to-end app concerns (identity, wallet, balances, pending/completed transactions). Testnet is the default for cheap iteration (e.g. Friendbot on testnet); mainnet paths exist in code for USDC transfer and DEX where you opt in and configure safely.
+- **Phase 1, Track 1 (SEP-24 MVP):** Replace stub anchor config and interactive URLs with **live SEP-24** flows against approved anchor environments; operational checklist for mainnet-first remittance (limits, monitoring, reconciliation).
+- **Later tracks (e.g. Transfer API, bKash, broader rails):** As described in `INVESTAR_AUTOMATION_PLAYBOOK.md`—extend beyond this Stellar + stub-ramp baseline without changing the fact that chain primitives here are production-grade code paths.
 
 ### Operational Notes
 
