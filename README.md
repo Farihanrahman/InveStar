@@ -21,6 +21,7 @@ A TypeScript React application for portfolio tracking, OMS-backed trading workfl
 - [Deployment Environments](#deployment-environments)
 - [Documentation Index](#documentation-index)
 - [Engineering Guidelines](#engineering-guidelines)
+- [License](#license)
 - [Contributing](#contributing)
 - [Security](#security)
 - [Ownership and Contacts](#ownership-and-contacts)
@@ -319,6 +320,12 @@ For mobile builds, run `npm run build` before `npx cap sync <platform>` to keep 
 - Run lint and build checks before opening a PR.
 - For API or auth changes, update the corresponding integration docs.
 - Avoid committing keys, tokens, or generated secret artifacts.
+
+## License
+
+This project’s source code is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 InveStar. Third-party dependencies are subject to their own licenses (see each package in `node_modules` or your lockfile / SBOM tooling).
 
 ## Contributing
 
