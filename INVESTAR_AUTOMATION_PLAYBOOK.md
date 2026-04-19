@@ -415,7 +415,7 @@ InveStar/
 
 ## Part 6 — Pre-launch security checklist
 
-- [ ] `investar-app-key.jks` removed from repo and key rotated ⚠️ URGENT
+- [x] Android signing: no `.jks` / `.keystore` in git (ignored at repo root and under `android/`). Store release keys and passwords only in CI secrets or a password manager. If a key was ever committed or leaked, rotate it and treat the old material as compromised. *(Repo history audit on tracked refs: no keystore files present.)*
 - [ ] `CLAUDE.md` added — Claude Code has project context
 - [ ] `nemoclaw-policy.yaml` blocks all MoneyGram/Stellar/Zero Hash outbound
 - [ ] Supabase RLS confirmed — users see only own data

@@ -27,4 +27,7 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
+# Android / signing — never commit (use CI variables or a password manager)
 *.jks
+*.keystore
+*.p12
