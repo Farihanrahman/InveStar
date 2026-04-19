@@ -360,12 +360,10 @@ Pull request checklist:
 
 ## Ownership and Contacts
 
-Update this section with your real team ownership map:
-
-- OMS/API integration owner: `@team-or-person`
-- Supabase functions and DB owner: `@team-or-person`
-- Mobile release owner: `@team-or-person`
-- Security escalation contact: `security@your-company.com`
+- OMS/API integration owner: Farihan Rahman (`@Farihanrahman` on GitHub)
+- Supabase functions and DB owner: Farihan Rahman (`@Farihanrahman` on GitHub)
+- Mobile release owner: Farihan Rahman (`@Farihanrahman` on GitHub)
+- Security escalation contact: `hello@investarbd.azurewebsites.net`
 
 ## Troubleshooting
 
