@@ -192,13 +192,23 @@ Primary routes are defined in `src/App.tsx`, including:
 
 ## Testing
 
-Automated unit/integration tests are not yet configured in this repository.
+Automated tests are configured with **Vitest** + **React Testing Library** for unit/component coverage.
 
-Current quality gate before merging:
+**Continuous integration:** On GitHub, the workflow `.github/workflows/ci.yml` runs on pushes and pull requests to `main`. It installs dependencies with `npm ci`, then runs the same checks below.
+
+Current quality gate before merging (locally and in CI):
 
 ```bash
+npm run test
 npm run lint
 npm run build
+```
+
+Test command shortcuts:
+
+```bash
+npm run test       # Run the full test suite once
+npm run test:watch # Run tests in watch mode
 ```
 
 Recommended manual smoke checks:
