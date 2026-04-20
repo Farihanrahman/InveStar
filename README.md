@@ -34,6 +34,7 @@ This project combines:
 - Portfolio and market monitoring
 - OMS authentication and order flows
 - Wallet and payment rails integration
+- Soroban smart contract workspace for Stellar contracts
 - AI-assisted chat/coaching surfaces
 - Mobile-ready packaging for Android/iOS
 
@@ -87,6 +88,8 @@ React UI (pages/components)
 │   ├── migrations/            # SQL migrations
 │   └── config.toml            # Supabase local config
 ├── android/                   # Capacitor Android project
+├── contracts/                 # Soroban smart contract crates (including investar_remit)
+├── Cargo.toml                 # Rust workspace manifest for Soroban contracts
 ├── public/                    # Static assets
 └── *.md                       # Integration and deployment docs
 ```
@@ -97,6 +100,9 @@ React UI (pages/components)
 - npm 9+ (default package manager in this guide)
 - Git
 - Supabase project credentials
+- For Soroban contract work:
+  - Rust / Cargo
+  - Stellar CLI
 - For mobile work:
   - Android Studio + JDK 17
   - Xcode (macOS) for iOS builds
