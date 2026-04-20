@@ -29,7 +29,7 @@ import PortfolioAllocationChart from "@/components/PortfolioAllocationChart";
 
 import WelcomeHeader from "@/components/WelcomeHeader";
 import AuthRequired from "@/components/AuthRequired";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { toast } from "sonner";
@@ -138,7 +138,7 @@ const Portfolio = () => {
     }
   };
 
-  const fetchRealTimePrices = async () => {
+  const fetchRealTimePrices = useCallback(async () => {
     setIsLoading(true);
     try {
       // Get symbols from holdings
@@ -177,7 +177,7 @@ const Portfolio = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [holdings, isAuthenticated, userId]);
 
   useEffect(() => {
     if (isAuthenticated && userId) {
@@ -185,7 +185,7 @@ const Portfolio = () => {
       const interval = setInterval(fetchRealTimePrices, 30000);
       return () => clearInterval(interval);
     }
-  }, [holdings, isAuthenticated, userId, watchlistRefreshKey]);
+  }, [fetchRealTimePrices, isAuthenticated, userId, watchlistRefreshKey]);
 
   const getHoldingData = (holding: Holding) => {
     const rtPrice = realTimePrices[holding.symbol];

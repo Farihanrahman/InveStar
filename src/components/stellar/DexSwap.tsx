@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ export const DexSwap = ({ publicKey, network }: DexSwapProps) => {
 
   const destAsset = sourceAsset === "XLM" ? "USDC" : "XLM";
   const omsUserId = user?.id ? String(user.id) : undefined;
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
 
   const fetchBalances = useCallback(async () => {
     if (!publicKey) return;
@@ -53,7 +53,7 @@ export const DexSwap = ({ publicKey, network }: DexSwapProps) => {
     } finally {
       setLoading(false);
     }
-  }, [publicKey, network, token, omsUserId]);
+  }, [headers, network, omsUserId, publicKey]);
 
   useEffect(() => {
     fetchBalances();
@@ -81,7 +81,7 @@ export const DexSwap = ({ publicKey, network }: DexSwapProps) => {
       }
     }, 600);
     return () => clearTimeout(timer);
-  }, [amount, sourceAsset, network]);
+  }, [amount, destAsset, headers, network, sourceAsset]);
 
   const handleFlip = () => {
     setSourceAsset(sourceAsset === "XLM" ? "USDC" : "XLM");

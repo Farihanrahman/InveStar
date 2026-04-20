@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Search, Star, Loader2 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { toast } from "sonner";
@@ -67,17 +67,17 @@ const StockSearchBar = ({ onSelectStock, onWatchlistUpdate }: StockSearchBarProp
     onWatchlistUpdateRef.current = onWatchlistUpdate;
   }, [onWatchlistUpdate]);
 
+  const fetchWatchlistItems = useCallback(() => {
+    if (!userId) return;
+    const items = getStoredWatchlist(userId);
+    setWatchlistItems(items);
+  }, [userId]);
+
   useEffect(() => {
     if (isAuthenticated && userId) {
       fetchWatchlistItems();
     }
-  }, [isAuthenticated, userId]);
-
-  const fetchWatchlistItems = () => {
-    if (!userId) return;
-    const items = getStoredWatchlist(userId);
-    setWatchlistItems(items);
-  };
+  }, [fetchWatchlistItems, isAuthenticated, userId]);
 
   // Filter stocks based on securityCode from API response
   // The API returns { data: [...] } and the hook extracts res.data, so tradeInfoData is the full response object

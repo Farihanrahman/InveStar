@@ -1,3 +1,4 @@
+/// <reference path="../deno-shims.d.ts" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -291,7 +292,9 @@ serve(async (req) => {
                     let args = {};
                     try {
                       args = JSON.parse(toolCall.function.arguments || "{}");
-                    } catch {}
+                  } catch {
+                    // Ignore malformed tool args
+                  }
 
                     let result;
 
@@ -686,7 +689,7 @@ function checkBDEligibility(args: any) {
     action,
     user_type: userType,
     amount_checked: amount > 0 ? `$${amount}` : "N/A",
-    ...bestMatch,
+    ...(bestMatch as Record<string, unknown>),
     disclaimer: "This is informational guidance, not legal advice. Regulations may change. Verify with Bangladesh Bank or BSEC for current rules."
   };
 }

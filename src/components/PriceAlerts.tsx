@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Trash2, TrendingUp, TrendingDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { toast } from "sonner";
@@ -31,18 +31,7 @@ const PriceAlerts = ({ stockPrices }: PriceAlertsProps) => {
   const [alertType, setAlertType] = useState<"above" | "below">("above");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (isAuthenticated && userId) {
-      fetchAlerts();
-    } else {
-      setLoading(false);
-    }
-    // Check alerts every 30 seconds
-    const interval = setInterval(checkAlerts, 30000);
-    return () => clearInterval(interval);
-  }, [stockPrices, isAuthenticated, userId]);
-
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -60,9 +49,9 @@ const PriceAlerts = ({ stockPrices }: PriceAlertsProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const checkAlerts = async () => {
+  const checkAlerts = useCallback(async () => {
     if (!userId) return;
 
     for (const alert of alerts) {
@@ -104,7 +93,22 @@ const PriceAlerts = ({ stockPrices }: PriceAlertsProps) => {
         setAlerts(prev => prev.filter(a => a.id !== alert.id));
       }
     }
-  };
+  }, [alerts, stockPrices, userId]);
+
+  useEffect(() => {
+    if (isAuthenticated && userId) {
+      void fetchAlerts();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, userId, fetchAlerts]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void checkAlerts();
+    }, 30000);
+    return () => window.clearInterval(interval);
+  }, [checkAlerts]);
 
   const createAlert = async () => {
     if (!symbol || !targetPrice) {

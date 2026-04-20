@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ export const FreighterWallet = () => {
 
   const FREIGHTER_TIMEOUT_MS = 10000;
 
-  const withTimeout = async <T,>(
+  const withTimeout = useCallback(async <T,>(
     promise: Promise<T>,
     timeoutMs: number,
     timeoutMessage: string,
@@ -36,13 +36,9 @@ export const FreighterWallet = () => {
         window.clearTimeout(timeoutId);
       }
     }
-  };
-
-  useEffect(() => {
-    checkConnection();
   }, []);
 
-  const checkConnection = async () => {
+  const checkConnection = useCallback(async () => {
     try {
       console.log("🔍 Checking Freighter connection on mount...");
       const freighterAvailable =
@@ -75,7 +71,11 @@ export const FreighterWallet = () => {
     } catch (error) {
       console.error("Freighter check error:", error);
     }
-  };
+  }, [withTimeout]);
+
+  useEffect(() => {
+    void checkConnection();
+  }, [checkConnection]);
 
   const handleConnect = async () => {
     setLoading(true);

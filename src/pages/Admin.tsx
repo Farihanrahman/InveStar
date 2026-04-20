@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,18 +45,42 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (authLoading) return;
-    
-    if (!isAuthenticated) {
-      navigate("/auth");
-      return;
+  const fetchUsers = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setUsers(data || []);
+      setFilteredUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load users.",
+        variant: "destructive",
+      });
     }
+  }, [toast]);
 
-    checkAdminAccess();
-  }, [navigate, isAuthenticated, authLoading, userId]);
+  const fetchWaitlist = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('waitlist' as any)
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const checkAdminAccess = async () => {
+      if (error) throw error;
+      setWaitlist((data as any) || []);
+    } catch (error) {
+      console.error('Error fetching waitlist:', error);
+    }
+  }, []);
+
+  const checkAdminAccess = useCallback(async () => {
     if (!userId) return;
     
     try {
@@ -80,50 +104,26 @@ const Admin = () => {
       }
 
       setIsAdmin(true);
-      fetchUsers();
-      fetchWaitlist();
+      void fetchUsers();
+      void fetchWaitlist();
     } catch (error) {
       console.error('Admin access check error:', error);
       navigate("/");
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers, fetchWaitlist, navigate, toast, userId]);
 
-  const fetchUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setUsers(data || []);
-      setFilteredUsers(data || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load users.",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!isAuthenticated) {
+      navigate("/auth");
+      return;
     }
-  };
 
-  const fetchWaitlist = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('waitlist' as any)
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setWaitlist((data as any) || []);
-    } catch (error) {
-      console.error('Error fetching waitlist:', error);
-    }
-  };
+    void checkAdminAccess();
+  }, [authLoading, checkAdminAccess, isAuthenticated, navigate]);
 
   useEffect(() => {
     if (searchTerm) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Copy, Check, Wallet, ExternalLink, RefreshCw, AlertTriangle } from "lucide-react";
@@ -19,11 +19,7 @@ export const BackendStellarWallet = ({ publicKey, onWalletRegenerated }: Backend
   const [accountNotFound, setAccountNotFound] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (publicKey) fetchBalance();
-  }, [publicKey]);
-
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!publicKey) return;
     setLoading(true);
     setAccountNotFound(false);
@@ -39,7 +35,11 @@ export const BackendStellarWallet = ({ publicKey, onWalletRegenerated }: Backend
     } finally {
       setLoading(false);
     }
-  };
+  }, [publicKey]);
+
+  useEffect(() => {
+    if (publicKey) void fetchBalance();
+  }, [publicKey, fetchBalance]);
 
   const regenerateWallet = async () => {
     setRegenerating(true);

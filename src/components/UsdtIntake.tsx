@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,11 +38,7 @@ export const UsdtIntake = ({ publicKey, onBalanceUpdate }: UsdtIntakeProps) => {
   const [pendingTx, setPendingTx] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (publicKey) fetchChains();
-  }, [publicKey]);
-
-  const fetchChains = async () => {
+  const fetchChains = useCallback(async () => {
     setLoadingChains(true);
     try {
       const { data, error } = await supabase.functions.invoke("usdt-intake", {
@@ -58,7 +54,11 @@ export const UsdtIntake = ({ publicKey, onBalanceUpdate }: UsdtIntakeProps) => {
     } finally {
       setLoadingChains(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (publicKey) void fetchChains();
+  }, [fetchChains, publicKey]);
 
   const selectedChainData = chains.find((c) => c.id === selectedChain);
   const parsedAmount = parseFloat(amount) || 0;

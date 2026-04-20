@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Trash2, TrendingUp, TrendingDown, MoreVertical, Layout, Grid } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useOmsAuth } from "@/lib/auth/omsAuthContext";
 import { toast } from "sonner";
 import {
@@ -107,11 +107,17 @@ const Watchlist = ({ onStockClick, onWatchlistUpdate }: WatchlistProps) => {
     localStorage.setItem('watchlist-view-mode', mode);
   };
 
+  const fetchWatchlist = useCallback(() => {
+    if (!userId) return;
+    const items = getStoredWatchlist(userId);
+    setWatchlistItems(items);
+  }, [userId]);
+
   useEffect(() => {
     if (isAuthenticated && userId) {
       fetchWatchlist();
     }
-  }, [isAuthenticated, userId, refreshKey]);
+  }, [fetchWatchlist, isAuthenticated, refreshKey, userId]);
 
   // Listen for watchlist updates from other components
   useEffect(() => {
@@ -123,13 +129,7 @@ const Watchlist = ({ onStockClick, onWatchlistUpdate }: WatchlistProps) => {
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [userId]);
-
-  const fetchWatchlist = () => {
-    if (!userId) return;
-    const items = getStoredWatchlist(userId);
-    setWatchlistItems(items);
-  };
+  }, [fetchWatchlist, userId]);
 
   const removeFromWatchlist = (securityCode: string) => {
     if (!userId) return;

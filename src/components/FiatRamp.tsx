@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +39,7 @@ export const FiatRamp = ({ publicKey, availableUsdc = 0, onBalanceUpdate }: Fiat
   const { toast } = useToast();
   const { triggerConfetti } = useConfetti();
 
-  useEffect(() => {
-    if (publicKey) {
-      fetchAnchors();
-    }
-  }, [publicKey]);
-
-  const fetchAnchors = async () => {
+  const fetchAnchors = useCallback(async () => {
     setLoadingAnchors(true);
     try {
       const { data, error } = await supabase.functions.invoke('stellar-anchor-ramp', {
@@ -65,7 +59,13 @@ export const FiatRamp = ({ publicKey, availableUsdc = 0, onBalanceUpdate }: Fiat
     } finally {
       setLoadingAnchors(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (publicKey) {
+      void fetchAnchors();
+    }
+  }, [publicKey, fetchAnchors]);
 
   const initiateRamp = async () => {
     if (!selectedAnchor || !amount) {

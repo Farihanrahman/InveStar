@@ -254,7 +254,11 @@ Deno.serve(async (req) => {
               for (const toolCall of message.tool_calls) {
                 const toolName = toolCall.function.name;
                 let toolArgs = {};
-                try { toolArgs = JSON.parse(toolCall.function.arguments || "{}"); } catch { }
+                try {
+                  toolArgs = JSON.parse(toolCall.function.arguments || "{}");
+                } catch {
+                  // Ignore malformed tool args
+                }
 
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "tool_call", tool: toolName, args: toolArgs })}\n\n`));
 
@@ -312,7 +316,9 @@ Deno.serve(async (req) => {
                       if (c) {
                         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "content", content: c })}\n\n`));
                       }
-                    } catch { }
+                    } catch {
+                      // Ignore malformed SSE payloads
+                    }
                   }
                 }
               } else {

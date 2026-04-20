@@ -1,3 +1,4 @@
+/// <reference path="../deno-shims.d.ts" />
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -402,7 +403,9 @@ Deno.serve(async (req) => {
                 let toolArgs = {};
                 try {
                   toolArgs = JSON.parse(toolCall.function.arguments || "{}");
-                } catch { }
+                } catch {
+                  // Ignore malformed tool args
+                }
 
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({
                   type: "tool_call",
@@ -433,7 +436,7 @@ Deno.serve(async (req) => {
               const streamResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
                 headers: {
-                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                  Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -464,7 +467,9 @@ Deno.serve(async (req) => {
                       if (c) {
                         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "content", content: c })}\n\n`));
                       }
-                    } catch { }
+                    } catch {
+                      // Ignore malformed SSE payloads
+                    }
                   }
                 }
               } else {

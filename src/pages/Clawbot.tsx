@@ -310,11 +310,11 @@ export default function Clawbot() {
   const [autoSpeak, setAutoSpeak] = useState(false);
   const lastAgentMsgRef = useRef<string>("");
 
-  const handleAgentVoiceTranscript = useCallback((text: string) => {
+  const handleAgentVoiceTranscript = (text: string) => {
     setChatInput(text);
     setAutoSpeak(true);
     setTimeout(() => sendChat(text), 100);
-  }, []);
+  };
 
   const {
     isListening: agentListening,
@@ -491,7 +491,9 @@ export default function Clawbot() {
                 return updated;
               });
             }
-          } catch { }
+          } catch {
+            // Ignore malformed SSE payloads
+          }
         }
       }
 
@@ -569,7 +571,9 @@ export default function Clawbot() {
             const parsed = JSON.parse(json);
             const c = parsed.choices?.[0]?.delta?.content;
             if (c) { acc += c; setAiOpinion(acc); }
-          } catch { }
+          } catch {
+            // Ignore malformed SSE payloads
+          }
         }
       }
     } catch {

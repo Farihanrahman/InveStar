@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +33,7 @@ export const WalletBalance = () => {
   const { toast } = useToast();
   const { token, user } = useOmsAuth();
 
-  const fetchWalletData = async () => {
+  const fetchWalletData = useCallback(async () => {
     try {
       const { data, error } = await supabase.functions.invoke('wallet-proxy', {
         body: { 
@@ -95,7 +95,7 @@ export const WalletBalance = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, toast, user?.id]);
 
   useEffect(() => {
     if (token) {
@@ -103,7 +103,7 @@ export const WalletBalance = () => {
     } else {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, fetchWalletData]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

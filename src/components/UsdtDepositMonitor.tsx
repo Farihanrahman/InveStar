@@ -124,9 +124,9 @@ export const UsdtDepositMonitor = ({
     return () => {
       if (confirmRef.current) clearInterval(confirmRef.current);
     };
-  }, [stage, autoConvertEnabled]);
+  }, [stage, autoConvertEnabled, triggerAutoConversion]);
 
-  const triggerAutoConversion = async () => {
+  const triggerAutoConversion = useCallback(async () => {
     try {
       const { data, error } = await supabase.functions.invoke("usdt-intake", {
         body: {
@@ -157,7 +157,7 @@ export const UsdtDepositMonitor = ({
         variant: "destructive",
       });
     }
-  };
+  }, [onComplete, toast, token, transactionId, usdcAmount, usdtAmount, user?.id]);
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);

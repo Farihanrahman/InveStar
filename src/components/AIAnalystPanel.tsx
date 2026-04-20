@@ -85,7 +85,7 @@ const AIAnalystPanel = ({ context, isOpen, onToggle, initialQuery }: AIAnalystPa
         setThinkingText("");
       });
     }
-  }, [isOpen, initialQuery, initialQuerySent]);
+  }, [isOpen, initialQuery, initialQuerySent, messages.length, streamAnalyst]);
 
   const streamAnalyst = useCallback(async (userMessage: Message) => {
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/investar-analyst`;

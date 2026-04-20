@@ -209,7 +209,9 @@ const AICoach = () => {
                 return [...prev, { role: "assistant", content: assistantContent }];
               });
             }
-          } catch {}
+          } catch {
+            // Ignore malformed SSE payloads
+          }
         }
       }
     } catch (error) {

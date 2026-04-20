@@ -9,7 +9,7 @@ export const passwordSchema = z
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
   .regex(/[0-9]/, 'Password must contain at least one number')
-  .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Password must contain at least one special character (!@#$%^&*...)');
+  .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, 'Password must contain at least one special character (!@#$%^&*...)');
 
 // Email validation schema with additional security checks
 export const emailSchema = z
@@ -70,7 +70,7 @@ export const getPasswordStrength = (password: string): {
   if (/[A-Z]/.test(password)) score++;
   if (/[a-z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
-  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 2;
+  if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) score += 2;
   
   // Check for common patterns (reduce score)
   if (/(.)\1{2,}/.test(password)) score--; // Repeated characters
@@ -80,7 +80,7 @@ export const getPasswordStrength = (password: string): {
   
   const isSecure = score >= 6 && password.length >= 12 && 
     /[A-Z]/.test(password) && /[a-z]/.test(password) && 
-    /[0-9]/.test(password) && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    /[0-9]/.test(password) && /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
   
   if (score <= 2) return { score, label: 'Weak', color: 'text-red-500', isSecure: false };
   if (score <= 4) return { score, label: 'Medium', color: 'text-yellow-500', isSecure: false };

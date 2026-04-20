@@ -8,6 +8,7 @@ describe("cn", () => {
   });
 
   it("ignores falsey values", () => {
-    expect(cn("text-sm", undefined, false && "hidden", null)).toBe("text-sm");
+    const condition = false;
+    expect(cn("text-sm", undefined, condition && "hidden", null)).toBe("text-sm");
   });
 });

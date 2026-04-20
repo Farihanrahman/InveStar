@@ -150,6 +150,42 @@ const StockDetailModal = ({ symbol, name, isOpen, onClose, isBDT = false, initia
     }
   }, [symbol, isBDT]);
 
+  const generateFallbackData = useCallback((period: TimePeriod): HistoricalResponse => {
+    const basePrice = initialPrice || (isBDT ? 245.80 : 182.52);
+    const points: HistoricalData[] = [];
+    let numPoints = 30;
+    let volatility = 0.02;
+    switch (period) {
+      case "1D": numPoints = 24; volatility = 0.005; break;
+      case "1W": numPoints = 7; volatility = 0.01; break;
+      case "1M": numPoints = 30; volatility = 0.02; break;
+      case "3M": numPoints = 90; volatility = 0.03; break;
+      case "1Y": numPoints = 52; volatility = 0.05; break;
+      case "5Y": numPoints = 60; volatility = 0.15; break;
+    }
+    let price = basePrice * (1 - volatility * 2);
+    const startPrice = price;
+    for (let i = 0; i < numPoints; i++) {
+      const change = (Math.random() - 0.45) * volatility * basePrice;
+      price = Math.max(price + change, basePrice * 0.7);
+      const date = new Date();
+      if (period === "1D") {
+        date.setHours(date.getHours() - (numPoints - i));
+        points.push({ date: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), price });
+      } else if (period === "5Y") {
+        date.setMonth(date.getMonth() - (numPoints - i));
+        points.push({ date: date.toLocaleDateString([], { month: 'short', year: '2-digit' }), price });
+      } else {
+        date.setDate(date.getDate() - (numPoints - i));
+        points.push({ date: date.toLocaleDateString([], { month: 'short', day: 'numeric' }), price });
+      }
+    }
+    points[points.length - 1].price = basePrice;
+    const priceChange = basePrice - startPrice;
+    const changePercent = (priceChange / startPrice) * 100;
+    return { data: points, currentPrice: basePrice, startPrice, change: priceChange, changePercent };
+  }, [initialPrice, isBDT]);
+
   const fetchHistoricalData = useCallback(async (period: TimePeriod) => {
     setIsChartLoading(true);
     try {
@@ -188,43 +224,7 @@ const StockDetailModal = ({ symbol, name, isOpen, onClose, isBDT = false, initia
       setIsChartLoading(false);
       setIsLoading(false);
     }
-  }, [symbol, initialPrice]);
-
-  const generateFallbackData = (period: TimePeriod): HistoricalResponse => {
-    const basePrice = initialPrice || (isBDT ? 245.80 : 182.52);
-    const points: HistoricalData[] = [];
-    let numPoints = 30;
-    let volatility = 0.02;
-    switch (period) {
-      case "1D": numPoints = 24; volatility = 0.005; break;
-      case "1W": numPoints = 7; volatility = 0.01; break;
-      case "1M": numPoints = 30; volatility = 0.02; break;
-      case "3M": numPoints = 90; volatility = 0.03; break;
-      case "1Y": numPoints = 52; volatility = 0.05; break;
-      case "5Y": numPoints = 60; volatility = 0.15; break;
-    }
-    let price = basePrice * (1 - volatility * 2);
-    const startPrice = price;
-    for (let i = 0; i < numPoints; i++) {
-      const change = (Math.random() - 0.45) * volatility * basePrice;
-      price = Math.max(price + change, basePrice * 0.7);
-      const date = new Date();
-      if (period === "1D") {
-        date.setHours(date.getHours() - (numPoints - i));
-        points.push({ date: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), price });
-      } else if (period === "5Y") {
-        date.setMonth(date.getMonth() - (numPoints - i));
-        points.push({ date: date.toLocaleDateString([], { month: 'short', year: '2-digit' }), price });
-      } else {
-        date.setDate(date.getDate() - (numPoints - i));
-        points.push({ date: date.toLocaleDateString([], { month: 'short', day: 'numeric' }), price });
-      }
-    }
-    points[points.length - 1].price = basePrice;
-    const priceChange = basePrice - startPrice;
-    const changePercent = (priceChange / startPrice) * 100;
-    return { data: points, currentPrice: basePrice, startPrice, change: priceChange, changePercent };
-  };
+  }, [symbol, initialPrice, generateFallbackData]);
 
   useEffect(() => {
     if (isOpen) {
@@ -240,7 +240,7 @@ const StockDetailModal = ({ symbol, name, isOpen, onClose, isBDT = false, initia
       fetchHistoricalData(timePeriod);
       fetchStockDetails();
     }
-  }, [isOpen, symbol, fetchHistoricalData, fetchStockDetails]);
+  }, [fetchHistoricalData, fetchStockDetails, isOpen, symbol, timePeriod]);
 
   useEffect(() => {
     if (aiScrollRef.current) {
@@ -380,7 +380,7 @@ const StockDetailModal = ({ symbol, name, isOpen, onClose, isBDT = false, initia
     }
     setAiLoading(false);
     setAiThinking("");
-  }, [aiMessages]);
+  }, [aiMessages, extractInlineCharts, removeInlineChartJson]);
 
   const handleAskAI = () => {
     setAnalystOpen(true);
@@ -392,7 +392,7 @@ const StockDetailModal = ({ symbol, name, isOpen, onClose, isBDT = false, initia
     if (isOpen && !isLoading) {
       fetchHistoricalData(timePeriod);
     }
-  }, [timePeriod]);
+  }, [fetchHistoricalData, isLoading, isOpen, timePeriod]);
 
   const handleTrade = async () => {
     if (!isAuthenticated || !userId) { toast.error("Please sign in to trade"); return; }

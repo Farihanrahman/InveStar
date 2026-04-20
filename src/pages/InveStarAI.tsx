@@ -97,13 +97,13 @@ const InveStarAI = () => {
   const lastAssistantRef = useRef<string>("");
   const { toast } = useToast();
 
-  const handleVoiceTranscript = useCallback((text: string) => {
+  const handleVoiceTranscript = (text: string) => {
     setInput(text);
     setAutoSpeak(true);
     setTimeout(() => {
       sendMessage(text);
     }, 100);
-  }, []);
+  };
 
   const {
     isListening,
@@ -202,7 +202,9 @@ const InveStarAI = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       userId = user?.id ?? null;
-    } catch { }
+    } catch {
+      // Non-fatal: user may be anonymous / auth unavailable
+    }
 
     let assistantSoFar = "";
 

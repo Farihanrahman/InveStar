@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -359,17 +359,7 @@ const InvestorQuiz = () => {
   const [automationAmount, setAutomationAmount] = useState<string>("");
   const [showDetails, setShowDetails] = useState(false);
 
-  useEffect(() => {
-    checkExistingProfile();
-    return () => {
-      if (advanceTimeoutRef.current) {
-        window.clearTimeout(advanceTimeoutRef.current);
-        advanceTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
-  const checkExistingProfile = async () => {
+  const checkExistingProfile = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -385,7 +375,17 @@ const InvestorQuiz = () => {
       setInvestorProfile(profile);
       setIsComplete(true);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void checkExistingProfile();
+    return () => {
+      if (advanceTimeoutRef.current) {
+        window.clearTimeout(advanceTimeoutRef.current);
+        advanceTimeoutRef.current = null;
+      }
+    };
+  }, [checkExistingProfile]);
 
   const getProfileFromType = (type: string): InvestorProfile => {
     const profiles: Record<string, InvestorProfile> = {

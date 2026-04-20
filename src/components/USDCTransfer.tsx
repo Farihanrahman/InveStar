@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,9 +31,27 @@ export const USDCTransfer = ({ publicKey, network = "testnet" }: USDCTransferPro
   const { toast } = useToast();
   const { triggerConfetti } = useConfetti();
 
+  const checkTrustline = useCallback(async () => {
+    if (!publicKey) return;
+    setCheckingTrustline(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('stellar-usdc-transfer', {
+        body: { action: 'check_trustline', network, omsUserId: user?.id ? String(user.id) : undefined },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (error) throw error;
+      setHasTrustline(data.hasTrustline);
+      setUsdcBalance(data.usdcBalance || "0");
+    } catch (error) {
+      console.error('Error checking trustline:', error);
+    } finally {
+      setCheckingTrustline(false);
+    }
+  }, [network, publicKey, token, user?.id]);
+
   useEffect(() => {
-    if (publicKey) checkTrustline();
-  }, [publicKey, network]);
+    if (publicKey) void checkTrustline();
+  }, [checkTrustline, publicKey]);
 
   const handleAddressChange = (value: string) => {
     setRecipientAddress(value);
@@ -52,24 +70,6 @@ export const USDCTransfer = ({ publicKey, network = "testnet" }: USDCTransferPro
     if (value && !isNaN(numValue)) {
       if (numValue <= 0) setAmountError('Must be greater than 0');
       else if (numValue > parseFloat(usdcBalance)) setAmountError('Insufficient balance');
-    }
-  };
-
-  const checkTrustline = async () => {
-    if (!publicKey) return;
-    setCheckingTrustline(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('stellar-usdc-transfer', {
-        body: { action: 'check_trustline', network, omsUserId: user?.id ? String(user.id) : undefined },
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (error) throw error;
-      setHasTrustline(data.hasTrustline);
-      setUsdcBalance(data.usdcBalance || "0");
-    } catch (error) {
-      console.error('Error checking trustline:', error);
-    } finally {
-      setCheckingTrustline(false);
     }
   };
 

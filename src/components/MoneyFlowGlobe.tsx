@@ -35,6 +35,43 @@ interface HoveredCity {
   connections: string[];
 }
 
+// City coordinates (major financial centers)
+const cities: City[] = [
+  { name: 'Dhaka', lat: 23.8, lng: 90.4 },
+  { name: 'Mumbai', lat: 19.0, lng: 72.9 },
+  { name: 'Singapore', lat: 1.3, lng: 103.8 },
+  { name: 'Dubai', lat: 25.2, lng: 55.3 },
+  { name: 'London', lat: 51.5, lng: -0.1 },
+  { name: 'New York', lat: 40.7, lng: -74.0 },
+  { name: 'Hong Kong', lat: 22.3, lng: 114.2 },
+  { name: 'Tokyo', lat: 35.7, lng: 139.7 },
+  { name: 'Sydney', lat: -33.9, lng: 151.2 },
+  { name: 'Frankfurt', lat: 50.1, lng: 8.7 },
+  { name: 'Lagos', lat: 6.5, lng: 3.4 },
+  { name: 'Nairobi', lat: -1.3, lng: 36.8 },
+  { name: 'Cape Town', lat: -33.9, lng: 18.4 },
+  { name: 'São Paulo', lat: -23.5, lng: -46.6 },
+];
+
+// Generate connection paths
+const connections: Connection[] = [
+  { start: cities[0], end: cities[1], index: 0 }, // Dhaka - Mumbai
+  { start: cities[0], end: cities[2], index: 1 }, // Dhaka - Singapore
+  { start: cities[0], end: cities[3], index: 2 }, // Dhaka - Dubai
+  { start: cities[4], end: cities[5], index: 3 }, // London - New York
+  { start: cities[6], end: cities[7], index: 4 }, // Hong Kong - Tokyo
+  { start: cities[3], end: cities[4], index: 5 }, // Dubai - London
+  { start: cities[2], end: cities[6], index: 6 }, // Singapore - Hong Kong
+  { start: cities[1], end: cities[3], index: 7 }, // Mumbai - Dubai
+  { start: cities[5], end: cities[4], index: 8 }, // New York - London
+  { start: cities[8], end: cities[2], index: 9 }, // Sydney - Singapore
+  { start: cities[9], end: cities[4], index: 10 }, // Frankfurt - London
+  { start: cities[10], end: cities[4], index: 11 }, // Lagos - London
+  { start: cities[11], end: cities[3], index: 12 }, // Nairobi - Dubai
+  { start: cities[12], end: cities[4], index: 13 }, // Cape Town - London
+  { start: cities[13], end: cities[5], index: 14 }, // São Paulo - New York
+];
+
 const MoneyFlowGlobe = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -45,43 +82,6 @@ const MoneyFlowGlobe = () => {
   
   const [hoveredCity, setHoveredCity] = useState<HoveredCity | null>(null);
   const [selectedCorridor, setSelectedCorridor] = useState<number | null>(null);
-
-  // City coordinates (major financial centers)
-  const cities: City[] = [
-    { name: 'Dhaka', lat: 23.8, lng: 90.4 },
-    { name: 'Mumbai', lat: 19.0, lng: 72.9 },
-    { name: 'Singapore', lat: 1.3, lng: 103.8 },
-    { name: 'Dubai', lat: 25.2, lng: 55.3 },
-    { name: 'London', lat: 51.5, lng: -0.1 },
-    { name: 'New York', lat: 40.7, lng: -74.0 },
-    { name: 'Hong Kong', lat: 22.3, lng: 114.2 },
-    { name: 'Tokyo', lat: 35.7, lng: 139.7 },
-    { name: 'Sydney', lat: -33.9, lng: 151.2 },
-    { name: 'Frankfurt', lat: 50.1, lng: 8.7 },
-    { name: 'Lagos', lat: 6.5, lng: 3.4 },
-    { name: 'Nairobi', lat: -1.3, lng: 36.8 },
-    { name: 'Cape Town', lat: -33.9, lng: 18.4 },
-    { name: 'São Paulo', lat: -23.5, lng: -46.6 },
-  ];
-
-  // Generate connection paths
-  const connections: Connection[] = [
-    { start: cities[0], end: cities[1], index: 0 }, // Dhaka - Mumbai
-    { start: cities[0], end: cities[2], index: 1 }, // Dhaka - Singapore
-    { start: cities[0], end: cities[3], index: 2 }, // Dhaka - Dubai
-    { start: cities[4], end: cities[5], index: 3 }, // London - New York
-    { start: cities[6], end: cities[7], index: 4 }, // Hong Kong - Tokyo
-    { start: cities[3], end: cities[4], index: 5 }, // Dubai - London
-    { start: cities[2], end: cities[6], index: 6 }, // Singapore - Hong Kong
-    { start: cities[1], end: cities[3], index: 7 }, // Mumbai - Dubai
-    { start: cities[5], end: cities[4], index: 8 }, // New York - London
-    { start: cities[8], end: cities[2], index: 9 }, // Sydney - Singapore
-    { start: cities[9], end: cities[4], index: 10 }, // Frankfurt - London
-    { start: cities[10], end: cities[4], index: 11 }, // Lagos - London
-    { start: cities[11], end: cities[3], index: 12 }, // Nairobi - Dubai
-    { start: cities[12], end: cities[4], index: 13 }, // Cape Town - London
-    { start: cities[13], end: cities[5], index: 14 }, // São Paulo - New York
-  ];
 
   connectionsRef.current = connections;
 

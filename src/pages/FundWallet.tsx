@@ -99,7 +99,9 @@ const FundWallet = () => {
         if (data?.wallet?.stellar_public_key) {
           setStellarPublicKey(data.wallet.stellar_public_key);
         }
-      } catch {}
+      } catch {
+        // Non-fatal: wallet lookup can fail transiently
+      }
     };
     fetchKey();
   }, [isAuthenticated, token, user?.id]);
