@@ -227,7 +227,7 @@ serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         let buffer = "";
-        let toolCalls: any[] = [];
+        const toolCalls: any[] = [];
 
         try {
           while (true) {

@@ -357,13 +357,13 @@ Deno.serve(async (req) => {
 
     // Agentic loop - up to 5 tool-calling iterations
     const MAX_ITERATIONS = 5;
-    let toolSteps: { tool: string; args: any; result: string }[] = [];
+    const toolSteps: { tool: string; args: any; result: string }[] = [];
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          let currentMessages = [...allMessages];
+          const currentMessages = [...allMessages];
 
           for (let i = 0; i < MAX_ITERATIONS; i++) {
             const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

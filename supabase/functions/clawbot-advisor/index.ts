@@ -316,11 +316,11 @@ CRITICAL RULES:
 
     // Agentic loop — up to 3 tool-calling iterations
     const MAX_ITERATIONS = 3;
-    let currentMessages = [
+    const currentMessages = [
       { role: "system", content: systemPrompt },
       ...messages,
     ];
-    let allActionResults: any[] = [];
+    const allActionResults: any[] = [];
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

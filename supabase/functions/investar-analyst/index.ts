@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          let currentMessages = [...allMessages];
+          const currentMessages = [...allMessages];
 
           for (let i = 0; i < MAX_ITERATIONS; i++) {
             const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

@@ -46,7 +46,7 @@ serve(async (req) => {
 
     // Route to appropriate endpoint on your backend
     let endpoint = "";
-    let method = "POST";
+    const method = "POST";
     let requestBody: Record<string, unknown> = { userId, ...params };
 
     switch (action) {
