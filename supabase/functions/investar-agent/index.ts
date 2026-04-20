@@ -1,4 +1,4 @@
-/// <reference path="../deno-shims.d.ts" />
+import "../deno-shims.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
