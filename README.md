@@ -370,10 +370,10 @@ Pull request checklist:
 
 ## Ownership and Contacts
 
-- OMS/API integration owner: Farihan Rahman (`@Farihanrahman` on GitHub)
-- Supabase functions and DB owner: Farihan Rahman (`@Farihanrahman` on GitHub)
-- Mobile release owner: Farihan Rahman (`@Farihanrahman` on GitHub)
-- Security escalation contact: `hello@investarbd.azurewebsites.net`
+- OMS/API integration owner: InveStar BD
+- Supabase functions and DB owner: InveStar BD
+- Mobile release owner: InveStar BD
+- Security escalation contact: `hello@investarbd.com`
 
 ## Troubleshooting
 
