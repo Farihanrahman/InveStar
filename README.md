@@ -93,7 +93,7 @@ React UI (pages/components)
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+ (required for Vite 5 and the test suite; see `.nvmrc`)
 - npm 9+ (default package manager in this guide)
 - Git
 - Supabase project credentials
@@ -167,11 +167,15 @@ Variable notes:
 ### Available Scripts
 
 ```bash
-npm run dev        # Start local dev server
-npm run build      # Production build
-npm run build:dev  # Development-mode build
-npm run preview    # Preview production build locally
-npm run lint       # Lint codebase
+npm run dev            # Start local dev server
+npm run build          # Production build
+npm run build:dev      # Development-mode build
+npm run preview        # Preview production build locally
+npm run lint           # Lint codebase
+npm run typecheck      # TypeScript type-check without emitting files
+npm run test           # Run the full test suite once
+npm run test:watch     # Run tests in watch mode
+npm run test:coverage  # Run tests with V8 coverage report
 ```
 
 ### Common Local Flow
@@ -192,7 +196,7 @@ Primary routes are defined in `src/App.tsx`, including:
 
 ## Testing
 
-Automated tests are configured with **Vitest** + **React Testing Library** for unit/component coverage.
+Automated tests are configured with **Vitest** + **React Testing Library** for unit/component coverage. The project requires **Node.js 20+** to run tests (`.nvmrc` pins this; run `nvm use` if using nvm).
 
 **Continuous integration:** On GitHub, the workflow `.github/workflows/ci.yml` runs on pushes and pull requests to `main`. It installs dependencies with `npm ci`, then runs the same checks below.
 
@@ -207,9 +211,21 @@ npm run build
 Test command shortcuts:
 
 ```bash
-npm run test       # Run the full test suite once
-npm run test:watch # Run tests in watch mode
+npm run test           # Run the full test suite once
+npm run test:watch     # Run tests in watch mode
+npm run test:coverage  # Run tests with V8 coverage report (requires @vitest/coverage-v8)
+npm run typecheck      # Type-check without building
 ```
+
+### Test coverage
+
+| File | What is covered |
+|------|----------------|
+| `src/lib/validation.test.ts` | Stellar address format validation, `isValidStellarAddress`, transfer amount limits, password strength, email rules, sign-up/sign-in schemas, rate limiting, input sanitisation |
+| `src/lib/auth/tokenStorage.test.ts` | OMS token set/get/remove, `hasOmsToken`, user data persistence (incl. malformed JSON recovery), auth provider switching |
+| `src/lib/api/utils.test.ts` | `objectToApiQueryString` (nulls, encoding, nested objects), `extractErrorMessage` (axios shapes, plain Error, unknown), `isUnauthorizedError`, `isCancelledRequest` |
+| `src/components/ui/button.test.tsx` | Button rendering and variant class application |
+| `src/lib/utils.test.ts` | `cn` Tailwind class merging utility |
 
 Recommended manual smoke checks:
 
