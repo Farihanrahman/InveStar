@@ -370,9 +370,9 @@ Pull request checklist:
 
 ## Ownership and Contacts
 
-- OMS/API integration owner: InveStar BD
-- Supabase functions and DB owner: InveStar BD
-- Mobile release owner: InveStar BD
+- OMS/API integration owner: `InveStar BD`
+- Supabase functions and DB owner: `InveStar BD`
+- Mobile release owner: `InveStar BD`
 - Security escalation contact: `hello@investarbd.com`
 
 ## Troubleshooting
