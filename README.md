@@ -316,9 +316,11 @@ This codebase includes implemented **Stellar transaction flows** (wallet lifecyc
 
 ### Soroban Contract Map
 
-- `contracts/investar_remit/src/lib.rs`: initial-phase `InveStarRemitContract` scaffold for remittance lifecycle data structures and contract flow design
-- `contracts/investar_remit/src/test.rs`: early Rust tests covering the current scaffolded lifecycle paths
+- `contracts/investar_remit/src/lib.rs`: `InveStarRemitContract` — remittance transfer lifecycle state machine (PendingCompliance → Approved → Funded → Settled / Cancelled), with typed errors, auth guards, and TTL-managed persistent storage
+- `contracts/investar_remit/src/test.rs`: Rust unit tests covering happy paths, invalid transitions, auth guards, pagination, and edge cases — run with `cargo test`
 - `contracts/README.md`: contract workspace usage and purpose
+
+**Current status:** The contract compiles and all tests pass in the Soroban sandbox. It is **not yet deployed** to testnet or mainnet (no contract address exists) and is **not yet called** from the frontend or any Supabase Edge Function. Phase 2 will deploy to Stellar testnet and wire the contract into the remittance flow (see planned tranches below).
 
 ### Frontend Integration Points
 
@@ -345,10 +347,11 @@ Supabase Function secrets (set in Supabase project secrets, not in frontend `.en
 
 ### What's shipped vs planned (tranches)
 
-- **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfer flows; **real** DEX swap flows; fiat-ramp UX and orchestration APIs; Soroban contract workspace with an initial-phase `investar_remit` scaffold and Rust tests.
-- **Current network posture:** Testnet remains the default environment for lower-cost iteration and integration testing. Mainnet-capable paths exist in code for selected Stellar operations and are intended to be enabled only with explicit environment, compliance, and operational controls.
+- **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfer flows; **real** DEX swap flows; fiat-ramp UX and orchestration APIs; Soroban contract workspace (`investar_remit`) with compiled, tested contract logic — **not yet deployed or integrated into the application**.
+- **Current network posture:** Testnet is the default for Stellar operations. Mainnet-capable paths exist in code for USDC transfer and DEX and are gated behind explicit environment controls.
+- **Phase 2 — Soroban deployment and integration:** Deploy `investar_remit` to Stellar testnet, wire a new `stellar-remit-contract` Supabase Edge Function to invoke it, and connect the remittance UI flow to the on-chain contract. This is the phase where the contract becomes a live feature.
 - **Phase 1, Track 1 (SEP-24 MVP):** Replace stub anchor configuration and interactive URLs with live SEP-24 integrations against approved anchor environments, with production monitoring, reconciliation, and limit management.
-- **Later tracks (e.g. Transfer API, bKash, broader rails):** Extend the current Stellar integration and initial Soroban scaffold into corridor-specific payout rails and automated investing flows described in `INVESTAR_AUTOMATION_PLAYBOOK.md`.
+- **Later tracks (e.g. Transfer API, bKash, broader rails):** Extend the Stellar integration and deployed Soroban contract into corridor-specific payout rails and automated investing flows described in `INVESTAR_AUTOMATION_PLAYBOOK.md`.
 
 ### Operational Notes
 
