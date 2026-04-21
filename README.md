@@ -18,6 +18,7 @@ A TypeScript React application for portfolio tracking, OMS-backed trading workfl
 - [Testing](#testing)
 - [Supabase Functions and Data](#supabase-functions-and-data)
 - [Stellar and MoneyGram Integration](#stellar-and-moneygram-integration)
+- [Soroban Contract Map](#soroban-contract-map)
 - [Mobile Build Notes](#mobile-build-notes)
 - [Deployment Environments](#deployment-environments)
 - [Documentation Index](#documentation-index)

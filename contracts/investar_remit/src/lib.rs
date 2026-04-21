@@ -2,8 +2,15 @@
 
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, panic_with_error, Address, BytesN, Env,
-    String, Vec,
+    String, Symbol, Vec,
 };
+
+// ─── TTL constants ────────────────────────────────────────────────────────────
+// 1 ledger ≈ 5 seconds  →  30 days ≈ 518 400 ledgers
+const TRANSFER_LIFETIME_THRESHOLD: u32 = 17_280; // ~1 day  — extend when below this
+const TRANSFER_BUMP_AMOUNT: u32 = 518_400; // ~30 days — extend to this
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
@@ -50,6 +57,8 @@ pub enum ContractError {
     InvalidStatusTransition = 6,
 }
 
+// ─── Contract ────────────────────────────────────────────────────────────────
+
 #[contract]
 pub struct InveStarRemitContract;
 
@@ -62,7 +71,9 @@ impl InveStarRemitContract {
 
         admin.require_auth();
         env.storage().instance().set(&DataKey::Admin, &admin);
-        env.storage().instance().set(&DataKey::NextTransferId, &1_u64);
+        env.storage()
+            .instance()
+            .set(&DataKey::NextTransferId, &1_u64);
     }
 
     pub fn admin(env: Env) -> Address {
@@ -86,10 +97,10 @@ impl InveStarRemitContract {
             panic_with_error!(&env, ContractError::InvalidAmount);
         }
 
-        let id = next_transfer_id(&env);
+        let id = load_next_id(&env);
         let transfer = RemittanceTransfer {
             id,
-            sender,
+            sender: sender.clone(),
             recipient_hash,
             payout_method,
             corridor,
@@ -103,18 +114,36 @@ impl InveStarRemitContract {
         env.storage()
             .persistent()
             .set(&DataKey::Transfer(id), &transfer);
-        bump_transfer_id(&env, id + 1);
+
+        extend_transfer_ttl(&env, id);
+        bump_next_id(&env, id + 1);
+
+        env.events().publish(
+            (Symbol::new(&env, "created"), id),
+            (sender, amount),
+        );
+
         id
     }
 
     pub fn approve_transfer(env: Env, admin: Address, transfer_id: u64) {
         require_admin(&env, &admin);
         update_status(&env, transfer_id, TransferStatus::Approved);
+
+        env.events().publish(
+            (Symbol::new(&env, "approved"), transfer_id),
+            (),
+        );
     }
 
     pub fn mark_funded(env: Env, admin: Address, transfer_id: u64) {
         require_admin(&env, &admin);
         update_status(&env, transfer_id, TransferStatus::Funded);
+
+        env.events().publish(
+            (Symbol::new(&env, "funded"), transfer_id),
+            (),
+        );
     }
 
     pub fn settle_transfer(
@@ -128,11 +157,18 @@ impl InveStarRemitContract {
         let mut transfer = get_transfer_or_panic(&env, transfer_id);
         ensure_transition(&env, &transfer.status, &TransferStatus::Settled);
         transfer.status = TransferStatus::Settled;
-        transfer.settlement_ref = Some(settlement_ref);
+        transfer.settlement_ref = Some(settlement_ref.clone());
 
         env.storage()
             .persistent()
             .set(&DataKey::Transfer(transfer_id), &transfer);
+
+        extend_transfer_ttl(&env, transfer_id);
+
+        env.events().publish(
+            (Symbol::new(&env, "settled"), transfer_id),
+            (settlement_ref,),
+        );
     }
 
     pub fn cancel_transfer(env: Env, actor: Address, transfer_id: u64) {
@@ -152,6 +188,13 @@ impl InveStarRemitContract {
         env.storage()
             .persistent()
             .set(&DataKey::Transfer(transfer_id), &transfer);
+
+        extend_transfer_ttl(&env, transfer_id);
+
+        env.events().publish(
+            (Symbol::new(&env, "cancelled"), transfer_id),
+            (),
+        );
     }
 
     pub fn get_transfer(env: Env, transfer_id: u64) -> RemittanceTransfer {
@@ -159,15 +202,16 @@ impl InveStarRemitContract {
         get_transfer_or_panic(&env, transfer_id)
     }
 
+    /// Returns the next transfer ID that will be assigned on the next create_transfer call.
     pub fn next_transfer_id(env: Env) -> u64 {
-        next_transfer_id(&env)
+        load_next_id(&env)
     }
 
     pub fn list_transfers(env: Env, start_after: u64, limit: u32) -> Vec<RemittanceTransfer> {
         require_initialized(&env);
 
         let mut results = Vec::new(&env);
-        let next_id = next_transfer_id(&env);
+        let next_id = load_next_id(&env);
         let mut cursor = if start_after == 0 { 1 } else { start_after + 1 };
         let mut remaining = limit;
 
@@ -188,6 +232,8 @@ impl InveStarRemitContract {
         results
     }
 }
+
+// ─── Private helpers ─────────────────────────────────────────────────────────
 
 fn require_initialized(env: &Env) {
     if !env.storage().instance().has(&DataKey::Admin) {
@@ -211,7 +257,9 @@ fn require_admin(env: &Env, admin: &Address) {
     }
 }
 
-fn next_transfer_id(env: &Env) -> u64 {
+/// Load the next-to-be-assigned transfer ID from instance storage.
+/// Named distinctly from the public `InveStarRemitContract::next_transfer_id` method.
+fn load_next_id(env: &Env) -> u64 {
     require_initialized(env);
     env.storage()
         .instance()
@@ -219,8 +267,10 @@ fn next_transfer_id(env: &Env) -> u64 {
         .unwrap_or_else(|| panic_with_error!(env, ContractError::NotInitialized))
 }
 
-fn bump_transfer_id(env: &Env, next_id: u64) {
-    env.storage().instance().set(&DataKey::NextTransferId, &next_id);
+fn bump_next_id(env: &Env, next_id: u64) {
+    env.storage()
+        .instance()
+        .set(&DataKey::NextTransferId, &next_id);
 }
 
 fn get_transfer_or_panic(env: &Env, transfer_id: u64) -> RemittanceTransfer {
@@ -237,6 +287,7 @@ fn update_status(env: &Env, transfer_id: u64, next_status: TransferStatus) {
     env.storage()
         .persistent()
         .set(&DataKey::Transfer(transfer_id), &transfer);
+    extend_transfer_ttl(env, transfer_id);
 }
 
 fn ensure_transition(env: &Env, current: &TransferStatus, next: &TransferStatus) {
@@ -252,6 +303,15 @@ fn ensure_transition(env: &Env, current: &TransferStatus, next: &TransferStatus)
     if !valid {
         panic_with_error!(env, ContractError::InvalidStatusTransition);
     }
+}
+
+/// Extend the TTL of a persistent transfer entry so it does not expire.
+fn extend_transfer_ttl(env: &Env, transfer_id: u64) {
+    env.storage().persistent().extend_ttl(
+        &DataKey::Transfer(transfer_id),
+        TRANSFER_LIFETIME_THRESHOLD,
+        TRANSFER_BUMP_AMOUNT,
+    );
 }
 
 mod test;
