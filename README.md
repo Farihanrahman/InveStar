@@ -143,7 +143,7 @@ All five backend modules are built around the Stellar rail. Module milestone map
 | Mod. | Service | Stellar Integration | Status |
 |------|---------|-------------------|--------|
 | A | `stellar-ramp-service` | SEP-10/24 · Horizon API · Azure Key Vault HSM JIT signing · USDC SAC | **Live on testnet** — 993 wallets · 1,000+ ops |
-| B | `moneygram-transfer-service` | USDC → MG Transfer API · bKash/bank BDT delivery | **Sandbox tested** · MG partner confirmed |
+| B | `moneygram-transfer-service` | USDC → MG Transfer API · bKash/bank BDT delivery | **Sandbox tested** · MoneyGram onboarded |
 | C | `treasury-conversion-service` | USDC → USD · MoneyGram FX conversion bridge (BD Bank compliance) | **Architecture complete** |
 | D | `remit-to-invest-connector` | Horizon SSE → InveStar B2B DSE OMS (live, direct brokerage) · Soroban AutoInvestVault T3 | **DSE OMS live** · Soroban T3 |
 | E | `ai-coach-service` | Horizon API read-only · tx history · fee savings display | Excluded from SCF budget |
@@ -355,14 +355,14 @@ Schema changes are tracked in `supabase/migrations/`.
 
 ## Stellar and MoneyGram Integration
 
-This codebase includes implemented **Stellar transaction flows** (wallet lifecycle, USDC, DEX), an **initial-phase Soroban contract scaffold with tests**, and **fiat-ramp application workflows** that are being advanced toward live SEP-24 anchor integration.
+This codebase includes implemented **Stellar transaction flows** (wallet lifecycle, USDC, DEX), an **initial-phase Soroban contract scaffold with tests**, and **fiat-ramp application workflows** aligned to an onboarded MoneyGram integration path while production SEP-24 endpoint cutover remains environment-gated.
 
 ### Integration Flows
 
 - `USDC on Stellar`: trustline checks, creation, and signed USDC payments via Horizon using `stellar-usdc-transfer` (real transactions; network is configurable).
 - `XLM/USDC DEX`: path finding, quotes, and signed path payments via `stellar-dex-swap` (real on-chain swaps on the selected network).
-- `Fiat on/off-ramp (SEP-24-shaped)`: deposit and withdrawal orchestration via `stellar-anchor-ramp`—auth, wallet linkage, fees, transaction records, and interactive URL handoff. Anchor endpoints and interactive URLs are **development stand-ins**, not production MoneyGram or Circle SEP-24 yet.
-- `MoneyGram ramps UI`: application and onboarding at `/moneygram-ramps` (product surface; distinct from certified production ramp integration).
+- `Fiat on/off-ramp (SEP-24-shaped)`: deposit and withdrawal orchestration via `stellar-anchor-ramp`—auth, wallet linkage, fees, transaction records, and interactive URL handoff. MoneyGram onboarding is complete; the repo currently uses development stand-ins for anchor endpoints and interactive URLs until production SEP-24 endpoint cutover.
+- `MoneyGram ramps UI`: MoneyGram access/onboarding surface at `/moneygram-ramps`; onboarding is complete, and this page remains the product-side integration surface rather than the certified production SEP-24 flow itself.
 - `Soroban remittance contract`: `contracts/investar_remit` is an early-stage contract scaffold for remittance lifecycle modeling and contract interface iteration.
 
 ### Edge Function Map
@@ -370,7 +370,7 @@ This codebase includes implemented **Stellar transaction flows** (wallet lifecyc
 - `create-stellar-wallet`: creates Stellar keys and stores **AES-GCM–encrypted** secrets server-side.
 - `stellar-usdc-transfer`: trustline and USDC payments via Stellar SDK; **defaults to testnet** (Friendbot can fund new testnet accounts); **mainnet is supported** when the client passes the mainnet network option—use explicit environment and rollout controls before production traffic.
 - `stellar-dex-swap`: **live** XLM/USDC quotes and swaps on Horizon for **testnet or mainnet** (path payments, liquidity-dependent).
-- `stellar-anchor-ramp`: ramp **workflow** with `moneygram` and `circle` options; uses **stub anchor metadata** and non-production interactive URLs until Phase 1 Track 1 (SEP-24 MVP) connects real anchor endpoints.
+- `stellar-anchor-ramp`: ramp **workflow** with `moneygram` and `circle` options; MoneyGram onboarding is complete, but the current repo still uses **stub anchor metadata** and non-production interactive URLs until the production endpoints are wired in.
 - `test-stellar`: utility endpoint for Stellar test operations.
 
 ### Data Flows — Three Delivery Tracks
@@ -541,7 +541,7 @@ $8,675 under the $150K cap. Back-weighted payments: 10% / 20% / 30% / 40%.
 
 | Tranche | Focus | Cost | Weeks |
 |---------|-------|------|-------|
-| **T1 MVP** (3 milestones) | Stellar wallet + SEP-10/24 + MoneyGram Ramps (confirmed partner) | $43,600 | 1–6 |
+| **T1 MVP** (3 milestones) | Stellar wallet + SEP-10/24 + MoneyGram Ramps (onboarded) | $43,600 | 1–6 |
 | **T2 Testnet** (5 milestones) | Treasury + MG Transfer API + SEP-12 KYC + 50-user beta | $45,225 | 5–11 |
 | **T3 Mainnet** (7 milestones) | Mainnet + remit-to-invest + Soroban OSS + mobile + SDK | $52,500 | 10–16 |
 | **TOTAL** | | **$141,325** | ≤16 |
@@ -553,7 +553,7 @@ $8,675 under the $150K cap. Back-weighted payments: 10% / 20% / 30% / 40%.
 | Milestone | Scope | Verifiable Proof |
 |-----------|-------|-----------------|
 | **M1.1 · $23,800** | Stellar Custodial Wallet Backend: NestJS + Stellar TypeScript SDK + Horizon API · Azure Key Vault HSM JIT signing · testnet deployment | Stellar testnet account address + first tx hash (stellar.expert) · HSM non-exportability log · GitHub: JIT signing · Horizon Postman collection |
-| **M1.2 · $17,850** | SEP-10 Auth + SEP-24 MoneyGram Ramps: full withdrawal flow → webview → USDC → poll → ref · MG Ramps allowlist submitted | Demo video: SEP-10→SEP-24→USDC tx→ref · testnet tx hash to MG anchor · SEP-10 JWT token log |
+| **M1.2 · $17,850** | SEP-10 Auth + SEP-24 MoneyGram Ramps: full withdrawal flow → webview → USDC → poll → ref · MoneyGram onboarding completed | Demo video: SEP-10→SEP-24→USDC tx→ref · testnet tx hash to MG anchor · SEP-10 JWT token log |
 | **T1 QA · $1,950** | E2E integration tests for wallet creation, SEP-10 auth, SEP-24 withdrawal · QA coverage report | QA matrix M1.1+M1.2 pass/fail · zero P0/P1 bugs · public testnet URL |
 
 **Tranche 2 — Testnet ($45,225 · Wks 5–11)**
