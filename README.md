@@ -1,9 +1,10 @@
 # InveStar Remittance Platform
 
-A TypeScript React application for portfolio tracking, OMS-backed trading workflows, wallet funding, and cross-border remittance experiences, with Supabase-powered backend functions and mobile packaging through Capacitor.Core backend services (stellar-ramp-service, treasury-conversion-service, moneygram-transfer-service) are in private repos — available for SCF panel review on request.
+InveStar is a cross-border remittance and investment platform that lets users send money internationally, manage a portfolio, trade through an OMS, and interact with Stellar-based payment rails — all from a single React application backed by Supabase and packaged for Android and iOS via Capacitor.
 
 ## Table of Contents
 
+- [SCF Review Snapshot](#scf-review-snapshot)
 - [Overview](#overview)
 - [Core Capabilities](#core-capabilities)
 - [Architecture](#architecture)
@@ -17,8 +18,8 @@ A TypeScript React application for portfolio tracking, OMS-backed trading workfl
 - [Testing](#testing)
 - [Supabase Functions and Data](#supabase-functions-and-data)
 - [Stellar and MoneyGram Integration](#stellar-and-moneygram-integration)
+- [Soroban Contract Map](#soroban-contract-map)
 - [Mobile Build Notes](#mobile-build-notes)
-- [Deployment Environments](#deployment-environments)
 - [Documentation Index](#documentation-index)
 - [Engineering Guidelines](#engineering-guidelines)
 - [License](#license)
@@ -27,6 +28,31 @@ A TypeScript React application for portfolio tracking, OMS-backed trading workfl
 - [Ownership and Contacts](#ownership-and-contacts)
 - [Troubleshooting](#troubleshooting)
 
+## SCF Review Snapshot
+
+This public repository now evidences the following parts of the InveStar scope claimed in the SCF application:
+
+- React + TypeScript application for investor onboarding, portfolio, wallet, and remittance UX
+- Supabase Edge Functions for Stellar wallet creation, USDC transfers, DEX swaps, and fiat-ramp workflow orchestration
+- Capacitor mobile packaging for Android/iOS delivery
+- Soroban smart contract workspace at [`contracts/`](contracts/) with an initial-phase `investar_remit` contract crate and Rust tests
+- MIT licensing at the repository root for open-source reviewability
+
+Current Soroban work in this repo is in the initial phase:
+
+- `contracts/investar_remit`: an early-stage remittance contract scaffold for transfer lifecycle modeling
+- Contract source: `contracts/investar_remit/src/lib.rs`
+- Contract tests: `contracts/investar_remit/src/test.rs`
+- Workspace manifest: `Cargo.toml`
+
+SCF reviewers should treat this repository as the public evidence base for:
+
+- frontend and mobile product surfaces
+- Supabase-mediated Stellar integration flows
+- initial-phase Soroban contract scaffolding and tests
+
+Core backend microservices referenced in the application architecture remain in separate service repositories and can be shared with the SCF panel on request.
+
 ## Overview
 
 This project combines:
@@ -34,6 +60,7 @@ This project combines:
 - Portfolio and market monitoring
 - OMS authentication and order flows
 - Wallet and payment rails integration
+- Soroban smart contract workspace for early-stage Stellar contract development
 - AI-assisted chat/coaching surfaces
 - Mobile-ready packaging for Android/iOS
 
@@ -45,6 +72,7 @@ The frontend runs on Vite + React. Backend integrations are handled through Supa
 - Dashboard, portfolio, orders, and virtual trading screens
 - Watchlist with persisted user data and real-time prices
 - Wallet operations and USDC transfer flows
+- Initial-phase Soroban remittance contract scaffold
 - Remittance and AI assistant pages
 - Push notification plumbing for mobile clients
 
@@ -54,9 +82,11 @@ The frontend runs on Vite + React. Backend integrations are handled through Supa
 React UI (pages/components)
   -> hooks + service layer (src/hooks, src/services/oms)
   -> API client + auth context (src/lib/api, src/lib/auth)
+  -> Soroban contract workspace (contracts/*)
   -> External systems:
      - OMS APIs
      - Supabase (Auth, Postgres, Edge Functions)
+     - Stellar / Soroban
      - Mobile runtime via Capacitor
 ```
 
@@ -67,6 +97,7 @@ React UI (pages/components)
 - Tailwind CSS + Radix UI components
 - TanStack Query
 - Supabase (Auth, Postgres, Edge Functions)
+- Soroban SDK / Rust workspace for Stellar smart contracts
 - Axios for OMS/service API calls
 - Capacitor for mobile app packaging
 
@@ -87,6 +118,8 @@ React UI (pages/components)
 │   ├── migrations/            # SQL migrations
 │   └── config.toml            # Supabase local config
 ├── android/                   # Capacitor Android project
+├── contracts/                 # Soroban smart contract crates (including investar_remit)
+├── Cargo.toml                 # Rust workspace manifest for Soroban contracts
 ├── public/                    # Static assets
 └── *.md                       # Integration and deployment docs
 ```
@@ -97,6 +130,9 @@ React UI (pages/components)
 - npm 9+ (default package manager in this guide)
 - Git
 - Supabase project credentials
+- For Soroban contract work:
+  - Rust / Cargo
+  - Stellar CLI
 - For mobile work:
   - Android Studio + JDK 17
   - Xcode (macOS) for iOS builds
@@ -186,6 +222,13 @@ npm run build
 npm run dev
 ```
 
+For Soroban contract verification:
+
+```bash
+cargo test
+stellar contract build
+```
+
 ### Routing Overview
 
 Primary routes are defined in `src/App.tsx`, including:
@@ -198,6 +241,8 @@ Primary routes are defined in `src/App.tsx`, including:
 
 Automated tests are configured with **Vitest** + **React Testing Library** for unit/component coverage. The project requires **Node.js 20+** to run tests (`.nvmrc` pins this; run `nvm use` if using nvm).
 
+Soroban contract tests are also included under `contracts/investar_remit/src/test.rs` and can be run with `cargo test`.
+
 **Continuous integration:** On GitHub, the workflow `.github/workflows/ci.yml` runs on pushes and pull requests to `main`. It installs dependencies with `npm ci`, then runs the same checks below.
 
 Current quality gate before merging (locally and in CI):
@@ -206,6 +251,7 @@ Current quality gate before merging (locally and in CI):
 npm run test
 npm run lint
 npm run build
+cargo test
 ```
 
 Test command shortcuts:
@@ -226,6 +272,7 @@ npm run typecheck      # Type-check without building
 | `src/lib/api/utils.test.ts` | `objectToApiQueryString` (nulls, encoding, nested objects), `extractErrorMessage` (axios shapes, plain Error, unknown), `isUnauthorizedError`, `isCancelledRequest` |
 | `src/components/ui/button.test.tsx` | Button rendering and variant class application |
 | `src/lib/utils.test.ts` | `cn` Tailwind class merging utility |
+| `contracts/investar_remit/src/test.rs` | Early Soroban contract scaffold tests covering the current remittance lifecycle flow design |
 
 Recommended manual smoke checks:
 
@@ -248,7 +295,7 @@ Schema changes are tracked in `supabase/migrations/`.
 
 ## Stellar and MoneyGram Integration
 
-This codebase includes **on-chain Stellar operations** (wallet lifecycle, USDC, DEX) plus **fiat ramp product flows** that are still maturing toward live SEP-24 anchor integration.
+This codebase includes implemented **Stellar transaction flows** (wallet lifecycle, USDC, DEX), an **initial-phase Soroban contract scaffold with tests**, and **fiat-ramp application workflows** that are being advanced toward live SEP-24 anchor integration.
 
 ### Integration Flows
 
@@ -256,6 +303,7 @@ This codebase includes **on-chain Stellar operations** (wallet lifecycle, USDC, 
 - `XLM/USDC DEX`: path finding, quotes, and signed path payments via `stellar-dex-swap` (real on-chain swaps on the selected network).
 - `Fiat on/off-ramp (SEP-24-shaped)`: deposit and withdrawal orchestration via `stellar-anchor-ramp`—auth, wallet linkage, fees, transaction records, and interactive URL handoff. Anchor endpoints and interactive URLs are **development stand-ins**, not production MoneyGram or Circle SEP-24 yet.
 - `MoneyGram ramps UI`: application and onboarding at `/moneygram-ramps` (product surface; distinct from certified production ramp integration).
+- `Soroban remittance contract`: `contracts/investar_remit` is an early-stage contract scaffold for remittance lifecycle modeling and contract interface iteration.
 
 ### Edge Function Map
 
@@ -264,6 +312,14 @@ This codebase includes **on-chain Stellar operations** (wallet lifecycle, USDC, 
 - `stellar-dex-swap`: **live** XLM/USDC quotes and swaps on Horizon for **testnet or mainnet** (path payments, liquidity-dependent).
 - `stellar-anchor-ramp`: ramp **workflow** with `moneygram` and `circle` options; uses **stub anchor metadata** and non-production interactive URLs until Phase 1 Track 1 (SEP-24 MVP) connects real anchor endpoints.
 - `test-stellar`: utility endpoint for Stellar test operations.
+
+### Soroban Contract Map
+
+- `contracts/investar_remit/src/lib.rs`: `InveStarRemitContract` — remittance transfer lifecycle state machine (PendingCompliance → Approved → Funded → Settled / Cancelled), with typed errors, auth guards, and TTL-managed persistent storage
+- `contracts/investar_remit/src/test.rs`: Rust unit tests covering happy paths, invalid transitions, auth guards, pagination, and edge cases — run with `cargo test`
+- `contracts/README.md`: contract workspace usage and purpose
+
+**Current status:** The contract compiles and all tests pass in the Soroban sandbox. It is **not yet deployed** to testnet or mainnet (no contract address exists) and is **not yet called** from the frontend or any Supabase Edge Function. Phase 2 will deploy to Stellar testnet and wire the contract into the remittance flow (see planned tranches below).
 
 ### Frontend Integration Points
 
@@ -290,9 +346,11 @@ Supabase Function secrets (set in Supabase project secrets, not in frontend `.en
 
 ### What's shipped vs planned (tranches)
 
-- **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfers; **real** DEX swaps; ramp API and UI that exercise end-to-end app concerns (identity, wallet, balances, pending/completed transactions). Testnet is the default for cheap iteration (e.g. Friendbot on testnet); mainnet paths exist in code for USDC transfer and DEX where you opt in and configure safely.
-- **Phase 1, Track 1 (SEP-24 MVP):** Replace stub anchor config and interactive URLs with **live SEP-24** flows against approved anchor environments; operational checklist for mainnet-first remittance (limits, monitoring, reconciliation).
-- **Later tracks (e.g. Transfer API, bKash, broader rails):** As described in `INVESTAR_AUTOMATION_PLAYBOOK.md`—extend beyond this Stellar + stub-ramp baseline without changing the fact that chain primitives here are production-grade code paths.
+- **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfer flows; **real** DEX swap flows; fiat-ramp UX and orchestration APIs; Soroban contract workspace (`investar_remit`) with compiled, tested contract logic — **not yet deployed or integrated into the application**.
+- **Current network posture:** Testnet is the default for Stellar operations. Mainnet-capable paths exist in code for USDC transfer and DEX and are gated behind explicit environment controls.
+- **Phase 2 — Soroban deployment and integration:** Deploy `investar_remit` to Stellar testnet, wire a new `stellar-remit-contract` Supabase Edge Function to invoke it, and connect the remittance UI flow to the on-chain contract. This is the phase where the contract becomes a live feature.
+- **Phase 1, Track 1 (SEP-24 MVP):** Replace stub anchor configuration and interactive URLs with live SEP-24 integrations against approved anchor environments, with production monitoring, reconciliation, and limit management.
+- **Later tracks (e.g. Transfer API, bKash, broader rails):** Extend the Stellar integration and deployed Soroban contract into corridor-specific payout rails and automated investing flows described in `INVESTAR_AUTOMATION_PLAYBOOK.md`.
 
 ### Operational Notes
 
@@ -315,21 +373,6 @@ npx cap open android
 
 For full release workflow details, use the deployment guide linked below.
 
-## Deployment Environments
-
-Use separate Supabase and OMS credentials per environment.
-
-- `development`: local testing, non-production keys, debug logging enabled.
-- `staging`: pre-release validation, production-like APIs with test data where possible.
-- `production`: live credentials, hardened config, release-only changes.
-
-Recommended file strategy:
-
-- `.env.local` for developer machine overrides
-- `.env.staging` for staging builds
-- `.env.production` for production builds
-
-For mobile builds, run `npm run build` before `npx cap sync <platform>` to keep web assets aligned.
 
 ## Documentation Index
 
