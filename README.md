@@ -559,7 +559,6 @@ $8,675 under the $150K cap. Back-weighted payments: 10% / 20% / 30% / 40%.
 
 **Architecture & SCF materials:**
 
-- [`InveStar SCF ARCHITECTURE.html`](https://htmlpreview.github.io/?https://github.com/Farihanrahman/InveStar/blob/main/InveStar%20SCF%20ARCHITECTURE.html) — Interactive architecture document with Mermaid diagrams (C4, data flows, state machine, Gantt) — rendered view for SCF reviewers
 - [`InveStar_Architecture_FULL 20Apr.pdf`](InveStar_Architecture_FULL%2020Apr.pdf) — Full technical architecture: C4 diagrams, data flow sequences, security model, Soroban roadmap, milestone detail, and regulatory constraints (SCF #43)
 - [`InveStar_SCF_Brief architecture 20Apr.pdf`](InveStar_SCF_Brief%20architecture%2020Apr.pdf) — SCF reviewer brief: value metrics, module summary, MoneyGram traction evidence, security layers, milestones and team
 
