@@ -16,13 +16,12 @@ InveStar is a cross-border remittance and investment platform that lets users se
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Environment Variables](#environment-variables)
-- [Environment Template](#environment-template)
 - [Development Workflows](#development-workflows)
 - [Testing](#testing)
 - [Supabase Functions and Data](#supabase-functions-and-data)
 - [Stellar and MoneyGram Integration](#stellar-and-moneygram-integration)
-- [Data Flows — Three Delivery Tracks](#data-flows--three-delivery-tracks)
-- [Soroban Contract Map](#soroban-contract-map)
+  - [Data Flows — Three Delivery Tracks](#data-flows--three-delivery-tracks)
+  - [Soroban Contract Map](#soroban-contract-map)
 - [Soroban Smart Contract Roadmap](#soroban-smart-contract-roadmap)
 - [Security Architecture](#security-architecture)
 - [Mobile Build Notes](#mobile-build-notes)
@@ -32,7 +31,7 @@ InveStar is a cross-border remittance and investment platform that lets users se
 - [Engineering Guidelines](#engineering-guidelines)
 - [License](#license)
 - [Contributing](#contributing)
-- [Security](#security)
+- [Security Policy](#security-policy)
 - [Ownership and Contacts](#ownership-and-contacts)
 - [Troubleshooting](#troubleshooting)
 
@@ -79,13 +78,22 @@ Core backend microservices referenced in the application architecture remain in 
 
 | Traction Metric | Verified Data |
 |---|---|
-| Testnet operations | 1,000+ · snapshot 2026-04-18 · all verifiable on [stellar.expert](https://stellar.expert/explorer/testnet) |
+| Testnet operations | 1,000+ · snapshot 2026-04-18 · verifiable on [stellar.expert/testnet](https://stellar.expert/explorer/testnet) |
+| Mainnet activity | Verifiable on [stellar.expert/public](https://stellar.expert/explorer/public) — live mainnet accounts visible |
 | Beta-user wallets on-chain | 993 Stellar accounts created via `stellar-ramp-service` |
 | Mainnet accounts | 2 live · beta-limited · cutover Q2 2026 per SCF milestone plan |
 | MoneyGram partner | Chain: Stellar · Asset: USDC · Withdraw, Deposit — **ACTIVE** confirmed |
 | DSE OMS integration | Live in beta · only startup with direct Dhaka Stock Exchange integration |
 | Capabilities shipped | 9 live: Stellar SDK · wallets · DEX swaps · fiat ramps · remittance · mobile · DSE OMS · dashboard |
 | Live URLs | [app.investarbd.com](https://app.investarbd.com) · [app.investarbd.com/traction](https://app.investarbd.com/traction) · [oms-investar.dev.sandbox3000.com](https://oms-investar.dev.sandbox3000.com) |
+
+**On-chain verification:**
+
+| Network | Link |
+|---------|------|
+| Testnet explorer | [stellar.expert/explorer/testnet](https://stellar.expert/explorer/testnet) |
+| Testnet account example | [GBFKKNKO44IBRZYFMDPZMZCLWDZ57FV2XENUECMDTSKX3KDT6O26ZTNM](https://stellar.expert/explorer/testnet/account/GBFKKNKO44IBRZYFMDPZMZCLWDZ57FV2XENUECMDTSKX3KDT6O26ZTNM) |
+| Mainnet explorer | [stellar.expert/explorer/public](https://stellar.expert/explorer/public) |
 
 **Curl verify — on-chain operations:**
 
@@ -213,50 +221,24 @@ Open the app at the URL shown in terminal (typically `http://localhost:5173`).
 
 ## Environment Variables
 
-Create `.env` in the repository root.
-
-Required:
+Create `.env` in the repository root. Copy the template below and fill in your values.
 
 ```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-VITE_OMS_API_BASE_URL=
-```
+# Required
+VITE_SUPABASE_URL=           # Supabase project URL
+VITE_SUPABASE_PUBLISHABLE_KEY=  # Supabase public anon key
+VITE_OMS_API_BASE_URL=       # OMS API domain or full base URL
 
-Optional (with defaults in code):
-
-```env
-VITE_OMS_APP_ID=InvestarOMS
-VITE_OMS_API_VERSION=v1
+# Optional (defaults applied in code)
+VITE_OMS_APP_ID=InvestarOMS  # OMS app identifier sent by client integrations
+VITE_OMS_API_VERSION=v1      # OMS API version selector
 ```
 
 Notes:
 
 - OMS base URL can be overridden at runtime from local storage (`OMS_API_BASE_URL_OVERRIDE`).
 - Keep all secrets out of source control.
-
-## Environment Template
-
-Use this as a starting `.env` template:
-
-```env
-# Required
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-VITE_OMS_API_BASE_URL=
-
-# Optional
-VITE_OMS_APP_ID=InvestarOMS
-VITE_OMS_API_VERSION=v1
-```
-
-Variable notes:
-
-- `VITE_SUPABASE_URL`: Supabase project URL.
-- `VITE_SUPABASE_PUBLISHABLE_KEY`: Supabase public anon key used by frontend.
-- `VITE_OMS_API_BASE_URL`: OMS API domain or full base URL.
-- `VITE_OMS_APP_ID`: OMS app identifier sent by client integrations.
-- `VITE_OMS_API_VERSION`: OMS API version selector.
+- Supabase Function secrets (`STELLAR_ENCRYPTION_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, etc.) are set in Supabase project secrets — not in the frontend `.env`.
 
 ## Development Workflows
 
@@ -448,20 +430,6 @@ No competitor combines Stellar settlement + DSE investing. Soroban `AutoInvestVa
 - `src/pages/MoneyGramRamps.tsx`
 - `src/pages/SendMoney.tsx`
 
-### Configuration and Secrets
-
-Frontend `.env` (already listed above):
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-Supabase Function secrets (set in Supabase project secrets, not in frontend `.env`):
-
-- `STELLAR_ENCRYPTION_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_ANON_KEY` (used by selected functions)
-
 ### What's shipped vs planned (tranches)
 
 - **In this repo now:** Encrypted wallet lifecycle; **real** on-chain USDC trustline and transfer flows; **real** DEX swap flows; fiat-ramp UX and orchestration APIs; Soroban contract workspace (`investar_remit`) with compiled, tested contract logic — **not yet deployed or integrated into the application**.
@@ -532,7 +500,6 @@ npx cap open android
 
 For full release workflow details, use the deployment guide linked below.
 
-
 ## Milestones and Budget
 
 **SCF Build Award #43 · Integration Track (Large) · $141,325 · 16 Weeks · May 1 – August 21, 2026**
@@ -590,8 +557,14 @@ $8,675 under the $150K cap. Back-weighted payments: 10% / 20% / 30% / 40%.
 
 ## Documentation Index
 
-- [`InveStar_Architecture_FULL 20Apr.pdf`](InveStar_Architecture_FULL%2020Apr.pdf) — Full technical architecture document: C4 diagrams, data flow sequences, security model, Soroban contract roadmap, milestone detail, and regulatory constraints (SCF #43)
+**Architecture & SCF materials:**
+
+- [`InveStar SCF ARCHITECTURE.html`](https://htmlpreview.github.io/?https://github.com/Farihanrahman/InveStar/blob/main/InveStar%20SCF%20ARCHITECTURE.html) — Interactive architecture document with Mermaid diagrams (C4, data flows, state machine, Gantt) — rendered view for SCF reviewers
+- [`InveStar_Architecture_FULL 20Apr.pdf`](InveStar_Architecture_FULL%2020Apr.pdf) — Full technical architecture: C4 diagrams, data flow sequences, security model, Soroban roadmap, milestone detail, and regulatory constraints (SCF #43)
 - [`InveStar_SCF_Brief architecture 20Apr.pdf`](InveStar_SCF_Brief%20architecture%2020Apr.pdf) — SCF reviewer brief: value metrics, module summary, MoneyGram traction evidence, security layers, milestones and team
+
+**Developer guides:**
+
 - `DEPLOYMENT_GUIDE.md`
 - `OMS_API_INTEGRATION.md`
 - `OMS_LOGIN_INTEGRATION.md`
@@ -635,7 +608,7 @@ Pull request checklist:
 - Update relevant docs (`README.md` or integration guides)
 - Note environment/config changes in PR description
 
-## Security
+## Security Policy
 
 - Never commit credentials, tokens, private keys, or keystore passwords.
 - Rotate keys immediately if accidental exposure occurs.
