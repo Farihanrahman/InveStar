@@ -1,6 +1,6 @@
 # InveStar Remittance Platform
 
-A TypeScript React application for portfolio tracking, OMS-backed trading workflows, wallet funding, and cross-border remittance experiences, with Supabase-powered backend functions and mobile packaging through Capacitor. Core backend services (`stellar-ramp-service`, `treasury-conversion-service`, `moneygram-transfer-service`) are maintained in separate repositories and are available for SCF panel review on request.
+InveStar is a cross-border remittance and investment platform that lets users send money internationally, manage a portfolio, trade through an OMS, and interact with Stellar-based payment rails — all from a single React application backed by Supabase and packaged for Android and iOS via Capacitor.
 
 ## Table of Contents
 
@@ -20,7 +20,6 @@ A TypeScript React application for portfolio tracking, OMS-backed trading workfl
 - [Stellar and MoneyGram Integration](#stellar-and-moneygram-integration)
 - [Soroban Contract Map](#soroban-contract-map)
 - [Mobile Build Notes](#mobile-build-notes)
-- [Deployment Environments](#deployment-environments)
 - [Documentation Index](#documentation-index)
 - [Engineering Guidelines](#engineering-guidelines)
 - [License](#license)
@@ -374,21 +373,6 @@ npx cap open android
 
 For full release workflow details, use the deployment guide linked below.
 
-## Deployment Environments
-
-Use separate Supabase and OMS credentials per environment.
-
-- `development`: local testing, non-production keys, debug logging enabled.
-- `staging`: pre-release validation, production-like APIs with test data where possible.
-- `production`: live credentials, hardened config, release-only changes.
-
-Recommended file strategy:
-
-- `.env.local` for developer machine overrides
-- `.env.staging` for staging builds
-- `.env.production` for production builds
-
-For mobile builds, run `npm run build` before `npx cap sync <platform>` to keep web assets aligned.
 
 ## Documentation Index
 
