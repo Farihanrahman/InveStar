@@ -4,6 +4,7 @@ InveStar is a cross-border remittance and investment platform that lets users se
 
 ## Table of Contents
 
+- [Codebase and Repository Scope](#codebase-and-repository-scope)
 - [SCF Review Snapshot](#scf-review-snapshot)
 - [Overview](#overview)
 - [Core Capabilities](#core-capabilities)
@@ -27,6 +28,18 @@ InveStar is a cross-border remittance and investment platform that lets users se
 - [Security](#security)
 - [Ownership and Contacts](#ownership-and-contacts)
 - [Troubleshooting](#troubleshooting)
+
+## Codebase and Repository Scope
+
+This public repository contains only a **curated subset** of the InveStar codebase intended to demonstrate architecture, Stellar integration patterns, and core product flows.
+
+The majority of production services, custody implementations, treasury logic, and partner integrations are maintained in **private repositories** for intellectual property, security, and contractual reasons, including NDAs with infrastructure and brokerage partners. As a result, not all modules referenced in the architecture and SCF materials are visible here, but every capability described can be validated through:
+
+- Public endpoints and demos
+- On-chain activity and Soroban contract sources where applicable
+- Selected open modules and documentation
+
+This approach aligns with industry best practices for protecting sensitive financial and custody infrastructure while still giving reviewers enough transparency to assess the project.
 
 ## SCF Review Snapshot
 
