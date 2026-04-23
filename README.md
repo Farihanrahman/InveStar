@@ -477,6 +477,18 @@ InveStar uses a five-layer defence-in-depth model. Every request traverses all 5
 | **4 · Application** | Check-Effect-Interaction pattern | Pending state written before external call · Stellar TX hash as idempotency key · AI coach hard-walled from tx paths |
 | **5 · Compliance** | FX guardrail + AML/KYC | SEP-12 with MG anchor · FX rate tolerance checks · append-only audit log keyed to Stellar TX hash |
 
+### HSM Signing — Implementation Roadmap
+
+Azure Key Vault HSM JIT signing is a **next-phase integration** (Milestone M1.1). The signing architecture is fully designed and documented in [`InveStar_Architecture_FULL 20Apr.pdf`](InveStar_Architecture_FULL%2020Apr.pdf), but the Azure SDK integration code (`@azure/keyvault-keys`, `@azure/identity`) does not yet appear in this public repo. It lives in the private `stellar-ramp-service` microservice and will be open-sourced progressively as follows:
+
+| Phase | Deliverable | Milestone |
+|-------|-------------|-----------|
+| **Next (M1.1)** | NestJS HSM service: `signTransaction(challenge)` via `KeyClient.sign()` · Ed25519 non-exportable key · non-exportability audit log | T1 |
+| **M2.2** | HSM integrated into full MoneyGram Transfer API flow · idempotency key tied to Stellar TX hash | T2 |
+| **M3.1** | Azure HSM promoted to production Key Vault · production non-exportability report published | T3 |
+
+Once M1.1 is merged, reviewers will be able to verify: the Azure SDK import, the JIT signing call, and the Horizon submission of the HSM-signed envelope — all in a public GitHub commit.
+
 **Regulatory constraints handled by architecture:**
 
 | Constraint | Architecture Impact |
